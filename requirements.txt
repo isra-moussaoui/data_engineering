@@ -1,0 +1,7 @@
+requests
+boto3
+kafka-python
+psycopg[binary]
+pandas
+pytest
+apache-airflow==2.8.1
