@@ -3000,3 +3000,171 @@ ModuleNotFoundError: No module named 'ingestion'
 [2026-04-16T16:08:14.167+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:08:14.167+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_batch_pipeline to 2026-04-15 08:00:00+00:00, run_after=2026-04-16 08:00:00+00:00
 [2026-04-16T16:08:14.172+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:08:14.171+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_stream_monitor to 2026-04-16 16:05:00+00:00, run_after=2026-04-16 16:10:00+00:00
 [2026-04-16T16:08:14.186+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/currency_pipeline_dag.py took 0.100 seconds
+[2026-04-16T16:08:44.409+0000] {processor.py:161} INFO - Started process (PID=563) to work on /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:08:44.410+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/currency_pipeline_dag.py for tasks to queue
+[2026-04-16T16:08:44.412+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:08:44.411+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:08:44.439+0000] {processor.py:840} INFO - DAG(s) 'currency_batch_pipeline', 'currency_stream_monitor' retrieved from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:08:44.468+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:08:44.468+0000] {dag.py:3036} INFO - Sync 2 DAGs
+[2026-04-16T16:08:44.488+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:08:44.487+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_batch_pipeline to 2026-04-15 08:00:00+00:00, run_after=2026-04-16 08:00:00+00:00
+[2026-04-16T16:08:44.493+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:08:44.493+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_stream_monitor to 2026-04-16 16:05:00+00:00, run_after=2026-04-16 16:10:00+00:00
+[2026-04-16T16:08:44.508+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/currency_pipeline_dag.py took 0.102 seconds
+[2026-04-16T16:09:14.791+0000] {processor.py:161} INFO - Started process (PID=568) to work on /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:09:14.793+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/currency_pipeline_dag.py for tasks to queue
+[2026-04-16T16:09:14.795+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:09:14.794+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:09:14.839+0000] {processor.py:840} INFO - DAG(s) 'currency_stream_monitor', 'currency_batch_pipeline' retrieved from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:09:14.865+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:09:14.864+0000] {dag.py:3036} INFO - Sync 2 DAGs
+[2026-04-16T16:09:14.884+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:09:14.884+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_batch_pipeline to 2026-04-15 08:00:00+00:00, run_after=2026-04-16 08:00:00+00:00
+[2026-04-16T16:09:14.890+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:09:14.890+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_stream_monitor to 2026-04-16 16:05:00+00:00, run_after=2026-04-16 16:10:00+00:00
+[2026-04-16T16:09:14.909+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/currency_pipeline_dag.py took 0.124 seconds
+[2026-04-16T16:09:45.229+0000] {processor.py:161} INFO - Started process (PID=573) to work on /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:09:45.230+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/currency_pipeline_dag.py for tasks to queue
+[2026-04-16T16:09:45.231+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:09:45.231+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:09:45.257+0000] {processor.py:840} INFO - DAG(s) 'currency_batch_pipeline', 'currency_stream_monitor' retrieved from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:09:45.285+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:09:45.285+0000] {dag.py:3036} INFO - Sync 2 DAGs
+[2026-04-16T16:09:45.304+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:09:45.304+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_batch_pipeline to 2026-04-15 08:00:00+00:00, run_after=2026-04-16 08:00:00+00:00
+[2026-04-16T16:09:45.310+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:09:45.310+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_stream_monitor to 2026-04-16 16:05:00+00:00, run_after=2026-04-16 16:10:00+00:00
+[2026-04-16T16:09:45.326+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/currency_pipeline_dag.py took 0.100 seconds
+[2026-04-16T16:10:15.647+0000] {processor.py:161} INFO - Started process (PID=582) to work on /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:10:15.649+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/currency_pipeline_dag.py for tasks to queue
+[2026-04-16T16:10:15.650+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:10:15.650+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:10:15.689+0000] {processor.py:840} INFO - DAG(s) 'currency_stream_monitor', 'currency_batch_pipeline' retrieved from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:10:15.733+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:10:15.733+0000] {dag.py:3036} INFO - Sync 2 DAGs
+[2026-04-16T16:10:15.757+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:10:15.757+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_batch_pipeline to 2026-04-15 08:00:00+00:00, run_after=2026-04-16 08:00:00+00:00
+[2026-04-16T16:10:15.762+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:10:15.762+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_stream_monitor to 2026-04-16 16:10:00+00:00, run_after=2026-04-16 16:15:00+00:00
+[2026-04-16T16:10:15.777+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/currency_pipeline_dag.py took 0.132 seconds
+[2026-04-16T16:10:46.069+0000] {processor.py:161} INFO - Started process (PID=587) to work on /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:10:46.070+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/currency_pipeline_dag.py for tasks to queue
+[2026-04-16T16:10:46.072+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:10:46.071+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:10:46.096+0000] {processor.py:840} INFO - DAG(s) 'currency_stream_monitor', 'currency_batch_pipeline' retrieved from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:10:46.122+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:10:46.122+0000] {dag.py:3036} INFO - Sync 2 DAGs
+[2026-04-16T16:10:46.140+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:10:46.139+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_batch_pipeline to 2026-04-15 08:00:00+00:00, run_after=2026-04-16 08:00:00+00:00
+[2026-04-16T16:10:46.144+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:10:46.144+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_stream_monitor to 2026-04-16 16:10:00+00:00, run_after=2026-04-16 16:15:00+00:00
+[2026-04-16T16:10:46.160+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/currency_pipeline_dag.py took 0.094 seconds
+[2026-04-16T16:11:16.461+0000] {processor.py:161} INFO - Started process (PID=592) to work on /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:11:16.463+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/currency_pipeline_dag.py for tasks to queue
+[2026-04-16T16:11:16.468+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:11:16.468+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:11:16.494+0000] {processor.py:840} INFO - DAG(s) 'currency_stream_monitor', 'currency_batch_pipeline' retrieved from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:11:16.523+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:11:16.523+0000] {dag.py:3036} INFO - Sync 2 DAGs
+[2026-04-16T16:11:16.541+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:11:16.541+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_batch_pipeline to 2026-04-15 08:00:00+00:00, run_after=2026-04-16 08:00:00+00:00
+[2026-04-16T16:11:16.546+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:11:16.546+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_stream_monitor to 2026-04-16 16:10:00+00:00, run_after=2026-04-16 16:15:00+00:00
+[2026-04-16T16:11:16.561+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/currency_pipeline_dag.py took 0.102 seconds
+[2026-04-16T16:11:46.837+0000] {processor.py:161} INFO - Started process (PID=597) to work on /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:11:46.838+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/currency_pipeline_dag.py for tasks to queue
+[2026-04-16T16:11:46.839+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:11:46.839+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:11:46.871+0000] {processor.py:840} INFO - DAG(s) 'currency_batch_pipeline', 'currency_stream_monitor' retrieved from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:11:46.895+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:11:46.895+0000] {dag.py:3036} INFO - Sync 2 DAGs
+[2026-04-16T16:11:46.914+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:11:46.913+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_batch_pipeline to 2026-04-15 08:00:00+00:00, run_after=2026-04-16 08:00:00+00:00
+[2026-04-16T16:11:46.919+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:11:46.919+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_stream_monitor to 2026-04-16 16:10:00+00:00, run_after=2026-04-16 16:15:00+00:00
+[2026-04-16T16:11:46.940+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/currency_pipeline_dag.py took 0.107 seconds
+[2026-04-16T16:12:17.490+0000] {processor.py:161} INFO - Started process (PID=602) to work on /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:12:17.491+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/currency_pipeline_dag.py for tasks to queue
+[2026-04-16T16:12:17.492+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:12:17.492+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:12:17.511+0000] {processor.py:840} INFO - DAG(s) 'currency_stream_monitor', 'currency_batch_pipeline' retrieved from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:12:17.537+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:12:17.537+0000] {dag.py:3036} INFO - Sync 2 DAGs
+[2026-04-16T16:12:17.555+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:12:17.554+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_batch_pipeline to 2026-04-15 08:00:00+00:00, run_after=2026-04-16 08:00:00+00:00
+[2026-04-16T16:12:17.560+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:12:17.560+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_stream_monitor to 2026-04-16 16:10:00+00:00, run_after=2026-04-16 16:15:00+00:00
+[2026-04-16T16:12:17.576+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/currency_pipeline_dag.py took 0.089 seconds
+[2026-04-16T16:12:47.894+0000] {processor.py:161} INFO - Started process (PID=607) to work on /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:12:47.895+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/currency_pipeline_dag.py for tasks to queue
+[2026-04-16T16:12:47.896+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:12:47.896+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:12:47.917+0000] {processor.py:840} INFO - DAG(s) 'currency_batch_pipeline', 'currency_stream_monitor' retrieved from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:12:47.942+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:12:47.941+0000] {dag.py:3036} INFO - Sync 2 DAGs
+[2026-04-16T16:12:47.958+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:12:47.958+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_batch_pipeline to 2026-04-15 08:00:00+00:00, run_after=2026-04-16 08:00:00+00:00
+[2026-04-16T16:12:47.963+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:12:47.963+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_stream_monitor to 2026-04-16 16:10:00+00:00, run_after=2026-04-16 16:15:00+00:00
+[2026-04-16T16:12:47.978+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/currency_pipeline_dag.py took 0.088 seconds
+[2026-04-16T16:13:18.482+0000] {processor.py:161} INFO - Started process (PID=612) to work on /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:13:18.488+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/currency_pipeline_dag.py for tasks to queue
+[2026-04-16T16:13:18.494+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:13:18.494+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:13:18.581+0000] {processor.py:840} INFO - DAG(s) 'currency_stream_monitor', 'currency_batch_pipeline' retrieved from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:13:18.604+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:13:18.604+0000] {dag.py:3036} INFO - Sync 2 DAGs
+[2026-04-16T16:13:18.621+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:13:18.621+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_batch_pipeline to 2026-04-15 08:00:00+00:00, run_after=2026-04-16 08:00:00+00:00
+[2026-04-16T16:13:18.626+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:13:18.626+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_stream_monitor to 2026-04-16 16:10:00+00:00, run_after=2026-04-16 16:15:00+00:00
+[2026-04-16T16:13:18.640+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/currency_pipeline_dag.py took 0.163 seconds
+[2026-04-16T16:13:48.754+0000] {processor.py:161} INFO - Started process (PID=617) to work on /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:13:48.755+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/currency_pipeline_dag.py for tasks to queue
+[2026-04-16T16:13:48.757+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:13:48.756+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:13:48.783+0000] {processor.py:840} INFO - DAG(s) 'currency_batch_pipeline', 'currency_stream_monitor' retrieved from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:13:48.806+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:13:48.806+0000] {dag.py:3036} INFO - Sync 2 DAGs
+[2026-04-16T16:13:48.823+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:13:48.823+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_batch_pipeline to 2026-04-15 08:00:00+00:00, run_after=2026-04-16 08:00:00+00:00
+[2026-04-16T16:13:48.828+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:13:48.828+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_stream_monitor to 2026-04-16 16:10:00+00:00, run_after=2026-04-16 16:15:00+00:00
+[2026-04-16T16:13:48.843+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/currency_pipeline_dag.py took 0.093 seconds
+[2026-04-16T16:14:19.171+0000] {processor.py:161} INFO - Started process (PID=622) to work on /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:14:19.173+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/currency_pipeline_dag.py for tasks to queue
+[2026-04-16T16:14:19.174+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:14:19.173+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:14:19.199+0000] {processor.py:840} INFO - DAG(s) 'currency_batch_pipeline', 'currency_stream_monitor' retrieved from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:14:19.234+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:14:19.234+0000] {dag.py:3036} INFO - Sync 2 DAGs
+[2026-04-16T16:14:19.253+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:14:19.253+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_batch_pipeline to 2026-04-15 08:00:00+00:00, run_after=2026-04-16 08:00:00+00:00
+[2026-04-16T16:14:19.259+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:14:19.259+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_stream_monitor to 2026-04-16 16:10:00+00:00, run_after=2026-04-16 16:15:00+00:00
+[2026-04-16T16:14:19.276+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/currency_pipeline_dag.py took 0.107 seconds
+[2026-04-16T16:14:49.554+0000] {processor.py:161} INFO - Started process (PID=627) to work on /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:14:49.556+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/currency_pipeline_dag.py for tasks to queue
+[2026-04-16T16:14:49.557+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:14:49.557+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:14:49.604+0000] {processor.py:840} INFO - DAG(s) 'currency_batch_pipeline', 'currency_stream_monitor' retrieved from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:14:49.642+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:14:49.642+0000] {dag.py:3036} INFO - Sync 2 DAGs
+[2026-04-16T16:14:49.665+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:14:49.665+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_batch_pipeline to 2026-04-15 08:00:00+00:00, run_after=2026-04-16 08:00:00+00:00
+[2026-04-16T16:14:49.673+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:14:49.672+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_stream_monitor to 2026-04-16 16:10:00+00:00, run_after=2026-04-16 16:15:00+00:00
+[2026-04-16T16:14:49.694+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/currency_pipeline_dag.py took 0.145 seconds
+[2026-04-16T16:15:19.940+0000] {processor.py:161} INFO - Started process (PID=636) to work on /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:15:19.943+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/currency_pipeline_dag.py for tasks to queue
+[2026-04-16T16:15:19.945+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:15:19.944+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:15:19.981+0000] {processor.py:840} INFO - DAG(s) 'currency_stream_monitor', 'currency_batch_pipeline' retrieved from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:15:20.017+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:15:20.017+0000] {dag.py:3036} INFO - Sync 2 DAGs
+[2026-04-16T16:15:20.039+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:15:20.039+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_batch_pipeline to 2026-04-15 08:00:00+00:00, run_after=2026-04-16 08:00:00+00:00
+[2026-04-16T16:15:20.044+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:15:20.044+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_stream_monitor to 2026-04-16 16:15:00+00:00, run_after=2026-04-16 16:20:00+00:00
+[2026-04-16T16:15:20.059+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/currency_pipeline_dag.py took 0.124 seconds
+[2026-04-16T16:15:50.380+0000] {processor.py:161} INFO - Started process (PID=641) to work on /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:15:50.382+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/currency_pipeline_dag.py for tasks to queue
+[2026-04-16T16:15:50.383+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:15:50.383+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:15:50.413+0000] {processor.py:840} INFO - DAG(s) 'currency_stream_monitor', 'currency_batch_pipeline' retrieved from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:15:50.446+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:15:50.446+0000] {dag.py:3036} INFO - Sync 2 DAGs
+[2026-04-16T16:15:50.474+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:15:50.473+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_batch_pipeline to 2026-04-15 08:00:00+00:00, run_after=2026-04-16 08:00:00+00:00
+[2026-04-16T16:15:50.480+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:15:50.480+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_stream_monitor to 2026-04-16 16:15:00+00:00, run_after=2026-04-16 16:20:00+00:00
+[2026-04-16T16:15:50.497+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/currency_pipeline_dag.py took 0.120 seconds
+[2026-04-16T16:16:20.753+0000] {processor.py:161} INFO - Started process (PID=646) to work on /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:16:20.754+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/currency_pipeline_dag.py for tasks to queue
+[2026-04-16T16:16:20.756+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:16:20.755+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:16:20.793+0000] {processor.py:840} INFO - DAG(s) 'currency_stream_monitor', 'currency_batch_pipeline' retrieved from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:16:20.819+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:16:20.819+0000] {dag.py:3036} INFO - Sync 2 DAGs
+[2026-04-16T16:16:20.837+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:16:20.837+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_batch_pipeline to 2026-04-15 08:00:00+00:00, run_after=2026-04-16 08:00:00+00:00
+[2026-04-16T16:16:20.842+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:16:20.842+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_stream_monitor to 2026-04-16 16:15:00+00:00, run_after=2026-04-16 16:20:00+00:00
+[2026-04-16T16:16:20.861+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/currency_pipeline_dag.py took 0.111 seconds
+[2026-04-16T16:16:51.110+0000] {processor.py:161} INFO - Started process (PID=651) to work on /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:16:51.112+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/currency_pipeline_dag.py for tasks to queue
+[2026-04-16T16:16:51.113+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:16:51.112+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:16:51.148+0000] {processor.py:840} INFO - DAG(s) 'currency_batch_pipeline', 'currency_stream_monitor' retrieved from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:16:51.173+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:16:51.173+0000] {dag.py:3036} INFO - Sync 2 DAGs
+[2026-04-16T16:16:51.192+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:16:51.192+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_batch_pipeline to 2026-04-15 08:00:00+00:00, run_after=2026-04-16 08:00:00+00:00
+[2026-04-16T16:16:51.198+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:16:51.197+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_stream_monitor to 2026-04-16 16:15:00+00:00, run_after=2026-04-16 16:20:00+00:00
+[2026-04-16T16:16:51.216+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/currency_pipeline_dag.py took 0.109 seconds
+[2026-04-16T16:17:21.512+0000] {processor.py:161} INFO - Started process (PID=656) to work on /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:17:21.513+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/currency_pipeline_dag.py for tasks to queue
+[2026-04-16T16:17:21.514+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:17:21.514+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:17:21.535+0000] {processor.py:840} INFO - DAG(s) 'currency_stream_monitor', 'currency_batch_pipeline' retrieved from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:17:21.563+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:17:21.563+0000] {dag.py:3036} INFO - Sync 2 DAGs
+[2026-04-16T16:17:21.580+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:17:21.580+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_batch_pipeline to 2026-04-15 08:00:00+00:00, run_after=2026-04-16 08:00:00+00:00
+[2026-04-16T16:17:21.587+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:17:21.587+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_stream_monitor to 2026-04-16 16:15:00+00:00, run_after=2026-04-16 16:20:00+00:00
+[2026-04-16T16:17:21.602+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/currency_pipeline_dag.py took 0.094 seconds
+[2026-04-16T16:17:51.861+0000] {processor.py:161} INFO - Started process (PID=661) to work on /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:17:51.862+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/currency_pipeline_dag.py for tasks to queue
+[2026-04-16T16:17:51.863+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:17:51.863+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:17:51.919+0000] {processor.py:840} INFO - DAG(s) 'currency_stream_monitor', 'currency_batch_pipeline' retrieved from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:17:51.943+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:17:51.942+0000] {dag.py:3036} INFO - Sync 2 DAGs
+[2026-04-16T16:17:51.961+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:17:51.961+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_batch_pipeline to 2026-04-15 08:00:00+00:00, run_after=2026-04-16 08:00:00+00:00
+[2026-04-16T16:17:51.969+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:17:51.969+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_stream_monitor to 2026-04-16 16:15:00+00:00, run_after=2026-04-16 16:20:00+00:00
+[2026-04-16T16:17:51.983+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/currency_pipeline_dag.py took 0.125 seconds
+[2026-04-16T16:18:22.294+0000] {processor.py:161} INFO - Started process (PID=666) to work on /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:18:22.295+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/currency_pipeline_dag.py for tasks to queue
+[2026-04-16T16:18:22.296+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:18:22.296+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:18:22.326+0000] {processor.py:840} INFO - DAG(s) 'currency_batch_pipeline', 'currency_stream_monitor' retrieved from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:18:22.353+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:18:22.352+0000] {dag.py:3036} INFO - Sync 2 DAGs
+[2026-04-16T16:18:22.373+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:18:22.373+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_batch_pipeline to 2026-04-15 08:00:00+00:00, run_after=2026-04-16 08:00:00+00:00
+[2026-04-16T16:18:22.379+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:18:22.378+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_stream_monitor to 2026-04-16 16:15:00+00:00, run_after=2026-04-16 16:20:00+00:00
+[2026-04-16T16:18:22.400+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/currency_pipeline_dag.py took 0.110 seconds
+[2026-04-16T16:18:52.714+0000] {processor.py:161} INFO - Started process (PID=671) to work on /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:18:52.715+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/currency_pipeline_dag.py for tasks to queue
+[2026-04-16T16:18:52.716+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:18:52.716+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:18:52.739+0000] {processor.py:840} INFO - DAG(s) 'currency_batch_pipeline', 'currency_stream_monitor' retrieved from /opt/airflow/dags/currency_pipeline_dag.py
+[2026-04-16T16:18:52.764+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:18:52.764+0000] {dag.py:3036} INFO - Sync 2 DAGs
+[2026-04-16T16:18:52.780+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:18:52.780+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_batch_pipeline to 2026-04-15 08:00:00+00:00, run_after=2026-04-16 08:00:00+00:00
+[2026-04-16T16:18:52.785+0000] {logging_mixin.py:188} INFO - [2026-04-16T16:18:52.785+0000] {dag.py:3823} INFO - Setting next_dagrun for currency_stream_monitor to 2026-04-16 16:15:00+00:00, run_after=2026-04-16 16:20:00+00:00
+[2026-04-16T16:18:52.800+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/currency_pipeline_dag.py took 0.088 seconds
