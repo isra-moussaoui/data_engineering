@@ -1,0 +1,15 @@
+[project]
+name = "data-engineering"
+version = "0.1.0"
+description = "Currency and crypto data engineering pipeline with batch and streaming workflows"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "apache-airflow==2.8.1",
+    "boto3>=1.42.91",
+    "kafka-python>=2.3.1",
+    "pandas>=3.0.2",
+    "psycopg[binary]>=3.3.3",
+    "pytest>=9.0.3",
+    "requests>=2.33.1",
+]

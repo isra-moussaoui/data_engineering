@@ -1,3 +1,7 @@
+# This file is used by Docker/Airflow containers.
+# Source of truth is pyproject.toml (managed with uv).
+# Regenerate with:
+# uv export --no-hashes --format requirements-txt -o requirements.txt
 requests
 boto3
 kafka-python

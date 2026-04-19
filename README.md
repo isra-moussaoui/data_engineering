@@ -1,170 +1,273 @@
-Currency Data Engineering Pipeline
-Overview
+# Currency Data Engineering Pipeline
 
-This project is an end-to-end data engineering pipeline for currency and crypto market data. It combines:
+## Overview
 
-Batch ingestion of daily forex and crypto snapshots
-Streaming ingestion of live crypto prices
-Real-time enrichment with rolling metrics (VWAP, price deviation)
-Workflow orchestration with Apache Airflow
-Object storage with MinIO
-Message streaming with Kafka
-Relational storage with PostgreSQL
+This project is an end-to-end data engineering pipeline for currency and crypto market data.
+It combines:
+
+- Batch ingestion of daily forex and crypto snapshots
+- Streaming ingestion of live crypto prices
+- Real-time enrichment with rolling metrics (VWAP, price deviation)
+- Workflow orchestration with Apache Airflow
+- Object storage with MinIO
+- Message streaming with Kafka
+- Relational storage with PostgreSQL
 
 The goal is to demonstrate a production-style pipeline that supports both historical and near real-time analytics.
 
-Architecture
-Batch Pipeline
-Fetches daily forex rates from Frankfurter API
-Fetches crypto spot prices from Coinbase API
-Stores raw JSON files in MinIO bucket: currency-raw
-Scheduled daily at 08:00 UTC
-Streaming Pipeline
-Produces live BTC / ETH / SOL prices into Kafka
-Consumes events and enriches them with:
-1-minute VWAP
-percentage deviation from VWAP
-Stores enriched records in PostgreSQL
-Monitored every 5 minutes via Airflow
-Tech Stack
-Python
-Docker / Docker Compose
-Apache Airflow
-Apache Kafka + Zookeeper
-PostgreSQL
-MinIO (S3-compatible object storage)
-Pandas / SQL
-Project Structure
+## Architecture
+
+### Batch Pipeline
+
+- Fetches daily forex rates from Frankfurter API
+- Fetches crypto spot prices from Coinbase API
+- Stores raw JSON files in MinIO bucket: `currency-raw`
+- Scheduled daily at 08:00 UTC
+
+### Streaming Pipeline
+
+- Produces live BTC / ETH / SOL prices into Kafka
+- Consumes events and enriches them with:
+  - 1-minute VWAP
+  - Percentage deviation from VWAP
+- Stores enriched records in PostgreSQL
+- Monitored every 5 minutes via Airflow
+
+## Tech Stack
+
+- Python
+- uv (package manager)
+- Docker / Docker Compose
+- Apache Airflow
+- Apache Kafka + Zookeeper
+- PostgreSQL
+- MinIO (S3-compatible object storage)
+- Pandas / SQL
+
+## Project Structure
+
+```text
 .
 ├── dags/                    # Airflow DAGs
 ├── ingestion/               # Batch ingestion scripts
 ├── streaming/               # Kafka producer / consumer
-├── sql/                     # DB initialization scripts
-├── Transformation
-├──  tests
+├── transformation/          # Data transformation logic
+├── tests/                   # Tests
 ├── docker-compose.yml
-├── requirements.txt
+├── pyproject.toml           # Python dependencies (source of truth)
+├── uv.lock                  # Locked dependency graph
+├── requirements.txt         # Export for Docker/Airflow containers
 └── README.md
-Prerequisites
+```
 
-Make sure you have installed:
+## Prerequisites
 
-Docker Desktop
-Docker Compose
-Git
+Install:
+
+- Docker Desktop
+- Docker Compose
+- Git
+- uv
 
 Recommended:
 
-At least 8 GB RAM available for Docker
-Setup Instructions
+- At least 8 GB RAM available for Docker
+
+## Dependency Management With uv
+
+This repository now uses `uv` as the package manager.
+Dependencies are defined in `pyproject.toml` and locked in `uv.lock`.
+
+### Install dependencies
+
+```bash
+uv sync
+```
+
+### Run Python commands inside the project environment
+
+```bash
+uv run python main.py
+uv run pytest
+```
+
+### Add or remove dependencies
+
+```bash
+uv add <package>
+uv remove <package>
+```
+
+### Update lock file after dependency changes
+
+```bash
+uv lock
+```
+
+### Export Docker requirements (important)
+
+Airflow services in `docker-compose.yml` still install from `requirements.txt`.
+After changing dependencies, regenerate it with:
+
+```bash
+uv export --no-hashes --format requirements-txt -o requirements.txt
+```
+
+## Setup Instructions
+
 1. Clone the repository
+
+```bash
 git clone <your-repo-url>
 cd <repo-folder>
-2. Start all services
+```
+
+2. Sync Python dependencies with uv
+
+```bash
+uv sync
+```
+
+3. Start all services
+
+```bash
 docker compose up -d
+```
 
 This starts:
 
-Airflow webserver
-Airflow scheduler
-PostgreSQL
-Kafka
-Zookeeper
-MinIO
-3. Wait for containers to initialize
+- Airflow webserver
+- Airflow scheduler
+- PostgreSQL
+- Kafka
+- Zookeeper
+- MinIO
 
-Check status:
+4. Wait for containers to initialize and verify status
 
+```bash
 docker ps
+```
 
-Make sure all containers are Up.
+Make sure all containers are `Up`.
 
-Access Services
-Airflow
-URL: http://localhost:8080
-Default login:
-username: airflow
-password: airflow
-MinIO
-API: http://localhost:9002
-Console: http://localhost:9003
-Credentials:
-user: minioadmin
-password: minioadmin
-PostgreSQL
-Host: localhost
-Port: 5432
-User: postgres
-Password: postgres
-Database: currency_db
-Running the Pipelines
-Batch Pipeline
+## Access Services
 
-In Airflow:
+### Airflow
 
-Enable DAG: currency_batch_pipeline
-Trigger manually or wait for daily schedule
+- URL: http://localhost:8080
+- Default login:
+  - Username: `airflow`
+  - Password: `airflow`
 
-What it does:
+### MinIO
 
-creates MinIO bucket if missing
-fetches daily forex + crypto snapshots
-stores raw JSON in MinIO
-Streaming Pipeline
+- API: http://localhost:9002
+- Console: http://localhost:9003
+- Credentials:
+  - User: `minioadmin`
+  - Password: `minioadmin`
+
+### PostgreSQL
+
+- Host: `localhost`
+- Port: `5432`
+- User: `postgres`
+- Password: `postgres`
+- Database: `currency_db`
+
+## Running the Pipelines
+
+### Batch Pipeline
 
 In Airflow:
 
-Enable DAG: currency_stream_monitor
+- Enable DAG: `currency_batch_pipeline`
+- Trigger manually or wait for daily schedule
 
 What it does:
 
-checks streaming consumer health every 5 minutes
-monitors Kafka lag / latest rows
-Verify the System
-Check batch files in MinIO
+- Creates MinIO bucket if missing
+- Fetches daily forex + crypto snapshots
+- Stores raw JSON in MinIO
 
-Open MinIO console and verify files exist in:
+### Streaming Pipeline
 
-currency-raw/
-Check streaming data in PostgreSQL
+In Airflow:
+
+- Enable DAG: `currency_stream_monitor`
+
+What it does:
+
+- Checks streaming consumer health every 5 minutes
+- Monitors Kafka lag / latest rows
+
+## Verify the System
+
+### Check batch files in MinIO
+
+Open the MinIO console and verify files exist in:
+
+- `currency-raw/`
+
+### Check streaming data in PostgreSQL
+
+```bash
 docker exec -it <postgres-container> psql -U postgres -d currency_db -c "SELECT coin, price_usd, vwap_1min, pct_from_vwap, event_time FROM crypto_stream_enriched ORDER BY event_time DESC LIMIT 10;"
+```
 
 Expected:
 
-recent BTC / ETH / SOL rows
-timestamps updating every few seconds
-Common Issues
-MinIO connection refused
+- Recent BTC / ETH / SOL rows
+- Timestamps updating every few seconds
+
+## Common Issues
+
+### MinIO connection refused
 
 Cause:
 
-using localhost inside Docker containers
+- Using `localhost` inside Docker containers
 
 Fix:
 
-use Docker service name:
+- Use Docker service name:
+
+```python
 MINIO_ENDPOINT = "http://minio:9000"
-Airflow UI not loading
+```
+
+### Airflow UI not loading
 
 Fix:
 
+```bash
 docker compose restart airflow-webserver airflow-scheduler
-Containers unhealthy
+```
+
+### Containers unhealthy
 
 Check logs:
 
+```bash
 docker logs <container-name>
-Future Improvements
-Add Grafana dashboard for live charts
-Add anomaly alerts
-Add historical warehouse layer
-Add Spark Structured Streaming
-Add CI/CD deployment
-Contributing
-Fork the repo
-Create a feature branch
-Commit your changes
-Open a pull request
-License
+```
+
+## Future Improvements
+
+- Add Grafana dashboard for live charts
+- Add anomaly alerts
+- Add historical warehouse layer
+- Add Spark Structured Streaming
+- Add CI/CD deployment
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Open a pull request
+
+## License
 
 MIT License
