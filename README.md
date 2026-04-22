@@ -128,7 +128,13 @@ cd <repo-folder>
 uv sync
 ```
 
-3. Start all services
+3. If you changed dependencies in `pyproject.toml`, export the Docker requirements file
+
+```bash
+uv export --no-hashes --format requirements-txt -o requirements.txt
+```
+
+4. Start all services
 
 ```bash
 docker compose up -d
@@ -143,7 +149,7 @@ This starts:
 - Zookeeper
 - MinIO
 
-4. Wait for containers to initialize and verify status
+5. Wait for containers to initialize and verify status
 
 ```bash
 docker ps
@@ -151,11 +157,64 @@ docker ps
 
 Make sure all containers are `Up`.
 
+## Collaborator Run Guide (Recommended Order)
+
+Use this sequence each time you want to run the application.
+
+1. Install and sync local Python dependencies:
+
+```bash
+uv sync
+```
+
+2. Update Docker dependency export only when Python dependencies changed:
+
+```bash
+uv export --no-hashes --format requirements-txt -o requirements.txt
+```
+
+3. Start all services:
+
+```bash
+docker compose up -d
+```
+
+4. Confirm services are running:
+
+```bash
+docker ps
+```
+
+5. Open Airflow and enable DAGs:
+
+- `currency_batch_pipeline`
+- `currency_stream_monitor`
+
+6. Trigger the batch DAG once (optional) to load initial snapshots.
+
+7. Verify enriched stream records in PostgreSQL:
+
+```bash
+docker exec -it <postgres-container> psql -U postgres -d currency_db -c "SELECT coin, price_usd, vwap_1min, pct_from_vwap, event_time FROM crypto_stream_enriched ORDER BY event_time DESC LIMIT 10;"
+```
+
+8. For local scripts and tests, always run through uv:
+
+```bash
+uv run python main.py
+uv run pytest
+```
+
+Dependency rule:
+
+- `pyproject.toml` and `uv.lock` are the source of truth.
+- `requirements.txt` is a generated export used by Docker/Airflow containers.
+
 ## Access Services
 
 ### Airflow
 
-- URL: http://localhost:8080
+- URL: http://localhost:8087
 - Default login:
   - Username: `airflow`
   - Password: `airflow`
