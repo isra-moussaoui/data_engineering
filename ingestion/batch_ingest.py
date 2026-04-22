@@ -16,7 +16,7 @@ MINIO_ACCESS_KEY = "minioadmin"
 MINIO_SECRET_KEY = "minioadmin"
 BUCKET_NAME = "currency-raw"
 
-
+# Initialize MinIO client
 s3 = boto3.client(
     "s3",
     endpoint_url=MINIO_ENDPOINT,
@@ -25,12 +25,14 @@ s3 = boto3.client(
     config=Config(signature_version="s3v4"),
 )
 
+# Ensure the bucket exists
 def ensure_bucket():
     existing = [b["Name"] for b in s3.list_buckets()["Buckets"]]
     if BUCKET_NAME not in existing:
         s3.create_bucket(Bucket=BUCKET_NAME)
         logger.info(f"Created bucket: {BUCKET_NAME}")
 
+# Save data to MinIO with a structured key
 def save_to_minio(data: dict, source: str):
     today = date.today().isoformat()
     key = f"{source}/{today}.json"

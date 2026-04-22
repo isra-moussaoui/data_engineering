@@ -1,6 +1,5 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from airflow.operators.bash import BashOperator
 from airflow.utils.dates import days_ago
 from datetime import timedelta
 import sys, logging
@@ -24,7 +23,7 @@ with DAG(
     dag_id="currency_batch_pipeline",
     default_args=default_args,
     description="Daily forex + crypto batch ingestion and transformation",
-    schedule_interval="0 8 * * *",
+    schedule_interval="0 8 * * *", # every day at 8am
     start_date=days_ago(1),
     catchup=False,
     tags=["currency", "batch"],
@@ -75,7 +74,7 @@ with DAG(
     dag_id="currency_stream_monitor",
     default_args=default_args,
     description="Check Kafka consumer lag and recent row counts",
-    schedule_interval="*/5 * * * *",
+    schedule_interval="*/5 * * * *", # every 5 minutes
     start_date=days_ago(1),
     catchup=False,
     tags=["currency", "streaming", "monitoring"],
@@ -88,13 +87,24 @@ with DAG(
         Raises an exception (triggering Airflow retry/alert) if stale.
         """
         import psycopg2
-        from datetime import datetime, timezone, timedelta
  
         conn = psycopg2.connect(
             host="postgres", port=5432,
             dbname="currency_db", user="postgres", password="postgres"
         )
         cur = conn.cursor()
+
+        # Give a clear operational error if the stream table has not been created yet.
+        cur.execute("SELECT to_regclass('public.raw_crypto_stream')")
+        table_name = cur.fetchone()[0]
+        if table_name is None:
+            conn.close()
+            raise ValueError(
+                "Table public.raw_crypto_stream does not exist in currency_db. "
+                "Start the streaming consumer first (python -m streaming.consumer) "
+                "and confirm it writes into the same Postgres service."
+            )
+
         cur.execute("""
             SELECT COUNT(*) FROM raw_crypto_stream
             WHERE ingested_at > NOW() - INTERVAL '2 minutes'

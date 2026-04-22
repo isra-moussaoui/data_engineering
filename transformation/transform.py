@@ -9,7 +9,7 @@ from botocore.client import Config
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
-MINIO_ENDPOINT = "http://localhost:9002"
+MINIO_ENDPOINT = "http://minio:9000"
 BUCKET_NAME = "currency-raw"
 
 s3 = boto3.client(
@@ -22,7 +22,7 @@ s3 = boto3.client(
 
 def get_pg_conn():
     return psycopg.connect(
-        host="localhost", port=5432,
+        host="postgres", port=5432,
         dbname="currency_db", user="postgres", password="postgres"
     )
 
@@ -87,6 +87,9 @@ def t1_clean_crypto(raw: dict) -> pd.DataFrame:
 # Pulls previous day's rates from Postgres and computes % change per pair.
 
 def t2_daily_change(df_today: pd.DataFrame, conn) -> pd.DataFrame:
+    # Ensure first runs do not fail when historical table is not created yet.
+    ensure_unified_table(conn)
+
     pairs = df_today["currency_pair"].tolist()
     if not pairs:
         return df_today.assign(pct_change=None, prev_rate=None)

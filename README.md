@@ -216,16 +216,21 @@ Dependency rule:
 
 - URL: http://localhost:8087
 - Default login:
-  - Username: `airflow`
-  - Password: `airflow`
+  - Username: `admin`
+  - Password: `admin`
 
 ### MinIO
 
-- API: http://localhost:9002
 - Console: http://localhost:9003
+- S3 API (inside Docker network): `http://minio:9000`
 - Credentials:
   - User: `minioadmin`
   - Password: `minioadmin`
+
+### Kafka
+
+- Bootstrap server (from host): `localhost:19092`
+- Bootstrap server (inside Docker network): `kafka:29092`
 
 ### PostgreSQL
 

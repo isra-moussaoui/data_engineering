@@ -11,7 +11,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 conn = psycopg.connect(
-    host="localhost",
+    host="postgres",
     port=5432,
     dbname="currency_db",
     user="postgres",
@@ -33,7 +33,7 @@ conn.commit()
 
 consumer = KafkaConsumer(
     "currency-stream",
-    bootstrap_servers="localhost:9092",
+    bootstrap_servers="kafka:9092",
     auto_offset_reset="earliest",
     value_deserializer=lambda m: json.loads(m.decode("utf-8"))
 )

@@ -5,11 +5,14 @@ Also maintains a rolling 1-minute VWAP (volume-weighted avg price) per coin.
 Run:  python -m streaming.consumer
 """
 
+from __future__ import annotations
+
 import json
 import time
 import logging
 import psycopg
-from datetime import datetime, timezone, timedelta
+import os
+from datetime import datetime
 from collections import defaultdict, deque
 
 from kafka import KafkaConsumer
@@ -21,7 +24,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-KAFKA_BOOTSTRAP = "localhost:9092"
+# Host execution (uv/python): localhost:19092
+# Container execution: set KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:19092")
 TOPIC           = "currency-stream"
 GROUP_ID        = "currency-consumer-group"
 MAX_BACKOFF     = 60
@@ -32,7 +37,8 @@ VWAP_WINDOW_S   = 60    # rolling window in seconds for VWAP calculation
 
 def get_pg_conn():
     return psycopg.connect(
-        host="localhost", port=5432,
+        host="postgres", # ✅ pas localhost, car consumer tourne dans un conteneur Docker séparé
+        port=5432,
         dbname="currency_db", user="postgres", password="postgres"
     )
 

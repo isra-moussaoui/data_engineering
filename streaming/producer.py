@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import json
 import time
 import logging
 import requests
+import os
 from datetime import datetime, timezone
  
 from kafka import KafkaProducer
@@ -13,7 +16,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
  
-KAFKA_BOOTSTRAP = "localhost:9092"
+# Host execution (uv/python): localhost:19092
+# Container execution: set KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:19092")
 TOPIC           = "currency-stream"
 COINS           = ["BTC", "ETH", "SOL"]
 INTERVAL        = 10        # seconds between polls

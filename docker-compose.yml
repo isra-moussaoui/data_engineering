@@ -32,7 +32,7 @@ services:
       KAFKA_MAX_REQUEST_SIZE: 1048576000
 
     healthcheck:
-      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:19092"]
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
       interval: 15s
       timeout: 10s
       retries: 10
@@ -43,8 +43,8 @@ services:
   minio:
     image: minio/minio
     ports:
-      - "9002:9000"
-      - "9003:9001"
+      - "9000:9000"   # ✅ API S3
+      - "9003:9001"   # ✅ console web
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
@@ -164,6 +164,37 @@ services:
       - ./requirements.txt:/requirements.txt
     command: >
       bash -c "pip install --user -r /requirements.txt && airflow scheduler"
+
+  # ─────────────────────────────
+  # STREAMING WORKERS
+  # ─────────────────────────────
+  stream-producer:
+    image: apache/airflow:2.8.1
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    volumes:
+      - ./streaming:/opt/airflow/streaming
+      - ./requirements.txt:/requirements.txt
+    command: >
+      bash -c "pip install --user -r /requirements.txt && python -m streaming.producer"
+
+  stream-consumer:
+    image: apache/airflow:2.8.1
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    volumes:
+      - ./streaming:/opt/airflow/streaming
+      - ./requirements.txt:/requirements.txt
+    command: >
+      bash -c "pip install --user -r /requirements.txt && python -m streaming.consumer"
 
 volumes:
   postgres_data:
