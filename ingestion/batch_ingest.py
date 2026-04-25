@@ -8,10 +8,7 @@ from botocore.client import Config
 
 from transformation.settings import get_minio_settings
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
 MINIO = get_minio_settings()
@@ -26,12 +23,14 @@ s3 = boto3.client(
     config=Config(signature_version="s3v4"),
 )
 
+
 # Ensure the bucket exists
 def ensure_bucket():
     existing = [b["Name"] for b in s3.list_buckets()["Buckets"]]
     if BUCKET_NAME not in existing:
         s3.create_bucket(Bucket=BUCKET_NAME)
         logger.info(f"Created bucket: {BUCKET_NAME}")
+
 
 # Save data to MinIO with a structured key
 def save_to_minio(data: dict, source: str):
@@ -41,9 +40,10 @@ def save_to_minio(data: dict, source: str):
         Bucket=BUCKET_NAME,
         Key=key,
         Body=json.dumps(data),
-        ContentType="application/json"
+        ContentType="application/json",
     )
     logger.info(f"Saved {key} to MinIO")
+
 
 def fetch_frankfurter(max_retries=3):
     """Source 1: Frankfurter — daily forex rates, EUR base"""
@@ -62,7 +62,8 @@ def fetch_frankfurter(max_retries=3):
             logger.warning(f"Frankfurter attempt {attempt} failed: {e}")
             if attempt == max_retries:
                 raise
-    
+
+
 def fetch_coinbase(max_retries=3):
     """Source 2: Coinbase — BTC, ETH, SOL against USD"""
     results = {}
@@ -83,18 +84,19 @@ def fetch_coinbase(max_retries=3):
         "rates": results,
         "base": "USD",
         "_ingested_at": datetime.utcnow().isoformat(),
-        "_source": "coinbase"
+        "_source": "coinbase",
     }
     logger.info(f"Coinbase: fetched {len(results)} crypto rates")
     return payload
 
+
 if __name__ == "__main__":
     ensure_bucket()
-    
+
     forex_data = fetch_frankfurter()
     save_to_minio(forex_data, source="frankfurter")
-    
+
     crypto_data = fetch_coinbase()
     save_to_minio(crypto_data, source="coinbase")
-    
+
     logger.info("Batch ingestion complete")

@@ -1,6 +1,8 @@
-﻿import psycopg
+import psycopg
 
-conn = psycopg.connect("dbname=currency_db user=postgres password=postgres host=localhost port=55432")
+conn = psycopg.connect(
+    "dbname=currency_db user=postgres password=postgres host=localhost port=55432"
+)
 cur = conn.cursor()
 
 # Get list of tables

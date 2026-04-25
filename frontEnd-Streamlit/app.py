@@ -18,7 +18,9 @@ pages = st.navigation(
         st.Page(str(APP_DIR / "pages" / "overview.py"), title="Overview", default=True),
         st.Page(str(APP_DIR / "pages" / "batch.py"), title="Market Data"),
         st.Page(str(APP_DIR / "pages" / "stream.py"), title="Live Crypto Feed"),
-        st.Page(str(APP_DIR / "pages" / "health.py"), title="Data Reliability & Freshness"),
+        st.Page(
+            str(APP_DIR / "pages" / "health.py"), title="Data Reliability & Freshness"
+        ),
     ]
 )
 

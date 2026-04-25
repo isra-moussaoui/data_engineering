@@ -4,10 +4,17 @@ import pandas as pd
 import streamlit as st
 
 from components.charts import render_event_table, render_health_timeline
-from data.sources import get_batch_snapshot, get_live_events, get_ops_timeline, get_pipeline_health
+from data.sources import (
+    get_batch_snapshot,
+    get_live_events,
+    get_ops_timeline,
+    get_pipeline_health,
+)
 
 st.title("Data Reliability & Freshness")
-st.caption("Operational reliability and freshness from production stream and batch tables")
+st.caption(
+    "Operational reliability and freshness from production stream and batch tables"
+)
 
 st.sidebar.subheader("health filters")
 window = st.sidebar.selectbox("timeline window", options=["30m", "2h", "6h"], index=1)
@@ -38,15 +45,24 @@ cards[1].metric("freshness sla", f"{health['freshness_sla_s']}s")
 cards[2].metric("last tick delay", f"{health['last_tick_delay_s']}s")
 cards[3].metric("consumer lag", str(health["consumer_lag"]))
 
-#status = st.columns(2)
-#status[0].success(f"kafka: {health['kafka_status']}")
-#status[1].success(f"consumer: {health['consumer_status']}")
+# status = st.columns(2)
+# status[0].success(f"kafka: {health['kafka_status']}")
+# status[1].success(f"consumer: {health['consumer_status']}")
 
 if not timeline.empty:
-    timeline["timestamp"] = pd.to_datetime(timeline["timestamp"], utc=True, errors="coerce")
-    timeline["ingest_lag_s"] = pd.to_numeric(timeline["ingest_lag_s"], errors="coerce").fillna(0.0)
-    timeline["writes_per_min"] = pd.to_numeric(timeline["writes_per_min"], errors="coerce").fillna(0.0)
-    render_health_timeline(timeline[["timestamp", "ingest_lag_s", "writes_per_min"]], title="real freshness pulse")
+    timeline["timestamp"] = pd.to_datetime(
+        timeline["timestamp"], utc=True, errors="coerce"
+    )
+    timeline["ingest_lag_s"] = pd.to_numeric(
+        timeline["ingest_lag_s"], errors="coerce"
+    ).fillna(0.0)
+    timeline["writes_per_min"] = pd.to_numeric(
+        timeline["writes_per_min"], errors="coerce"
+    ).fillna(0.0)
+    render_health_timeline(
+        timeline[["timestamp", "ingest_lag_s", "writes_per_min"]],
+        title="real freshness pulse",
+    )
 else:
     st.info("No stream samples found in the selected window.")
 

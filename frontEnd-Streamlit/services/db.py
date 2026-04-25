@@ -14,10 +14,12 @@ try:
     _pydantic_settings = importlib.import_module("pydantic_settings")
     BaseSettings = _pydantic_settings.BaseSettings
     SettingsConfigDict = _pydantic_settings.SettingsConfigDict
-except ModuleNotFoundError:  # pragma: no cover - fallback for environments without the package
+except (
+    ModuleNotFoundError
+):  # pragma: no cover - fallback for environments without the package
+
     class SettingsConfigDict(dict):
         pass
-
 
     class BaseSettings:
         model_config = SettingsConfigDict()
@@ -26,12 +28,24 @@ except ModuleNotFoundError:  # pragma: no cover - fallback for environments with
             config = getattr(self, "model_config", {})
             prefix = config.get("env_prefix", "")
             for name, default in self.__class__.__dict__.items():
-                if name.startswith("_") or name in {"model_config"} or callable(default) or isinstance(default, property):
+                if (
+                    name.startswith("_")
+                    or name in {"model_config"}
+                    or callable(default)
+                    or isinstance(default, property)
+                ):
                     continue
-                value = overrides.get(name, os.getenv(f"{prefix}{name.upper()}", default))
-                if isinstance(default, int) and isinstance(value, str) and value.isdigit():
+                value = overrides.get(
+                    name, os.getenv(f"{prefix}{name.upper()}", default)
+                )
+                if (
+                    isinstance(default, int)
+                    and isinstance(value, str)
+                    and value.isdigit()
+                ):
                     value = int(value)
                 setattr(self, name, value)
+
 
 logger = logging.getLogger(__name__)
 FRONTEND_DIR = Path(__file__).resolve().parent.parent
@@ -49,7 +63,9 @@ class DatabaseSettings(BaseSettings):
     user: str = "postgres"
     password: str = "postgres"
 
-    model_config = SettingsConfigDict(env_prefix="POSTGRES_", env_file=str(ENV_FILE), extra="ignore")
+    model_config = SettingsConfigDict(
+        env_prefix="POSTGRES_", env_file=str(ENV_FILE), extra="ignore"
+    )
 
     @property
     def dsn(self) -> str:
@@ -287,26 +303,77 @@ def _derive_batch_series(currency_pair: str, lookback_days: int) -> pd.DataFrame
         "USD/JPY": ("EUR/JPY", "EUR/USD", "USD", "JPY"),
     }
     if currency_pair not in formulas:
-        return _empty_df(["currency_pair", "base", "quote", "rate", "prev_rate", "pct_change", "rate_date", "source", "ingested_at", "transformed_at"])
+        return _empty_df(
+            [
+                "currency_pair",
+                "base",
+                "quote",
+                "rate",
+                "prev_rate",
+                "pct_change",
+                "rate_date",
+                "source",
+                "ingested_at",
+                "transformed_at",
+            ]
+        )
 
     numerator_pair, denominator_pair, base, quote = formulas[currency_pair]
-    numerator = _read_df(BATCH_SERIES_SQL, {"currency_pair": numerator_pair, "days": lookback_days})
-    denominator = _read_df(BATCH_SERIES_SQL, {"currency_pair": denominator_pair, "days": lookback_days})
+    numerator = _read_df(
+        BATCH_SERIES_SQL, {"currency_pair": numerator_pair, "days": lookback_days}
+    )
+    denominator = _read_df(
+        BATCH_SERIES_SQL, {"currency_pair": denominator_pair, "days": lookback_days}
+    )
 
     if numerator.empty or denominator.empty:
-        return _empty_df(["currency_pair", "base", "quote", "rate", "prev_rate", "pct_change", "rate_date", "source", "ingested_at", "transformed_at"])
+        return _empty_df(
+            [
+                "currency_pair",
+                "base",
+                "quote",
+                "rate",
+                "prev_rate",
+                "pct_change",
+                "rate_date",
+                "source",
+                "ingested_at",
+                "transformed_at",
+            ]
+        )
 
-    numerator = _to_numeric(numerator, ["rate"])[["rate_date", "rate"]].rename(columns={"rate": "num_rate"})
-    denominator = _to_numeric(denominator, ["rate"])[["rate_date", "rate"]].rename(columns={"rate": "den_rate"})
-    merged = numerator.merge(denominator, on="rate_date", how="inner").sort_values("rate_date")
+    numerator = _to_numeric(numerator, ["rate"])[["rate_date", "rate"]].rename(
+        columns={"rate": "num_rate"}
+    )
+    denominator = _to_numeric(denominator, ["rate"])[["rate_date", "rate"]].rename(
+        columns={"rate": "den_rate"}
+    )
+    merged = numerator.merge(denominator, on="rate_date", how="inner").sort_values(
+        "rate_date"
+    )
     merged = merged[merged["den_rate"].notna() & (merged["den_rate"] != 0)]
 
     if merged.empty:
-        return _empty_df(["currency_pair", "base", "quote", "rate", "prev_rate", "pct_change", "rate_date", "source", "ingested_at", "transformed_at"])
+        return _empty_df(
+            [
+                "currency_pair",
+                "base",
+                "quote",
+                "rate",
+                "prev_rate",
+                "pct_change",
+                "rate_date",
+                "source",
+                "ingested_at",
+                "transformed_at",
+            ]
+        )
 
     merged["rate"] = merged["num_rate"] / merged["den_rate"]
     merged["prev_rate"] = merged["rate"].shift(1)
-    merged["pct_change"] = ((merged["rate"] - merged["prev_rate"]) / merged["prev_rate"] * 100).round(4)
+    merged["pct_change"] = (
+        (merged["rate"] - merged["prev_rate"]) / merged["prev_rate"] * 100
+    ).round(4)
     merged["currency_pair"] = currency_pair
     merged["base"] = base
     merged["quote"] = quote
@@ -314,7 +381,20 @@ def _derive_batch_series(currency_pair: str, lookback_days: int) -> pd.DataFrame
     merged["ingested_at"] = pd.NaT
     merged["transformed_at"] = pd.NaT
 
-    return merged[["currency_pair", "base", "quote", "rate", "prev_rate", "pct_change", "rate_date", "source", "ingested_at", "transformed_at"]]
+    return merged[
+        [
+            "currency_pair",
+            "base",
+            "quote",
+            "rate",
+            "prev_rate",
+            "pct_change",
+            "rate_date",
+            "source",
+            "ingested_at",
+            "transformed_at",
+        ]
+    ]
 
 
 def fetch_stream_snapshot(limit: int = 3) -> pd.DataFrame:
@@ -322,15 +402,39 @@ def fetch_stream_snapshot(limit: int = 3) -> pd.DataFrame:
         return _read_df(STREAM_SNAPSHOT_SQL, {"limit": limit})
     except Exception as exc:
         logger.warning("fetch_stream_snapshot failed: %s", exc)
-        return _empty_df(["coin", "pair", "price_usd", "vwap_1min", "pct_from_vwap", "event_time", "processed_at"])
+        return _empty_df(
+            [
+                "coin",
+                "pair",
+                "price_usd",
+                "vwap_1min",
+                "pct_from_vwap",
+                "event_time",
+                "processed_at",
+            ]
+        )
 
 
-def fetch_stream_timeseries(coin: str = "BTC", lookback_minutes: int = 180) -> pd.DataFrame:
+def fetch_stream_timeseries(
+    coin: str = "BTC", lookback_minutes: int = 180
+) -> pd.DataFrame:
     try:
-        return _read_df(STREAM_TIMESERIES_SQL, {"coin": coin, "minutes": lookback_minutes})
+        return _read_df(
+            STREAM_TIMESERIES_SQL, {"coin": coin, "minutes": lookback_minutes}
+        )
     except Exception as exc:
         logger.warning("fetch_stream_timeseries failed: %s", exc)
-        return _empty_df(["coin", "pair", "price_usd", "vwap_1min", "pct_from_vwap", "event_time", "processed_at"])
+        return _empty_df(
+            [
+                "coin",
+                "pair",
+                "price_usd",
+                "vwap_1min",
+                "pct_from_vwap",
+                "event_time",
+                "processed_at",
+            ]
+        )
 
 
 def fetch_stream_events(limit: int = 30, coin: str | None = None) -> pd.DataFrame:
@@ -338,7 +442,17 @@ def fetch_stream_events(limit: int = 30, coin: str | None = None) -> pd.DataFram
         return _read_df(STREAM_EVENTS_SQL, {"limit": limit, "coin": coin})
     except Exception as exc:
         logger.warning("fetch_stream_events failed: %s", exc)
-        return _empty_df(["coin", "pair", "price_usd", "vwap_1min", "pct_from_vwap", "event_time", "processed_at"])
+        return _empty_df(
+            [
+                "coin",
+                "pair",
+                "price_usd",
+                "vwap_1min",
+                "pct_from_vwap",
+                "event_time",
+                "processed_at",
+            ]
+        )
 
 
 def fetch_batch_snapshot(limit: int = 10) -> pd.DataFrame:
@@ -348,18 +462,50 @@ def fetch_batch_snapshot(limit: int = 10) -> pd.DataFrame:
         return enriched.sort_values(["source", "currency_pair"]).head(limit)
     except Exception as exc:
         logger.warning("fetch_batch_snapshot failed: %s", exc)
-        return _empty_df(["currency_pair", "base", "quote", "rate", "prev_rate", "pct_change", "rate_date", "source", "ingested_at", "transformed_at"])
+        return _empty_df(
+            [
+                "currency_pair",
+                "base",
+                "quote",
+                "rate",
+                "prev_rate",
+                "pct_change",
+                "rate_date",
+                "source",
+                "ingested_at",
+                "transformed_at",
+            ]
+        )
 
 
-def fetch_batch_series(currency_pair: str = "EUR/USD", lookback_days: int = 30) -> pd.DataFrame:
+def fetch_batch_series(
+    currency_pair: str = "EUR/USD", lookback_days: int = 30
+) -> pd.DataFrame:
     try:
-        direct = _read_df(BATCH_SERIES_SQL, {"currency_pair": currency_pair, "days": lookback_days})
+        direct = _read_df(
+            BATCH_SERIES_SQL, {"currency_pair": currency_pair, "days": lookback_days}
+        )
         if not direct.empty:
             return direct
-        return _derive_batch_series(currency_pair=currency_pair, lookback_days=lookback_days)
+        return _derive_batch_series(
+            currency_pair=currency_pair, lookback_days=lookback_days
+        )
     except Exception as exc:
         logger.warning("fetch_batch_series failed: %s", exc)
-        return _empty_df(["currency_pair", "base", "quote", "rate", "prev_rate", "pct_change", "rate_date", "source", "ingested_at", "transformed_at"])
+        return _empty_df(
+            [
+                "currency_pair",
+                "base",
+                "quote",
+                "rate",
+                "prev_rate",
+                "pct_change",
+                "rate_date",
+                "source",
+                "ingested_at",
+                "transformed_at",
+            ]
+        )
 
 
 def fetch_ops_timeline(window_minutes: int = 120) -> pd.DataFrame:
@@ -376,18 +522,34 @@ def fetch_dashboard_overview() -> dict:
     stream_snapshot = _to_numeric(stream_snapshot, ["pct_from_vwap"])
     batch_snapshot = _to_numeric(batch_snapshot, ["pct_change"])
 
-    live_assets = int(stream_snapshot["coin"].nunique()) if not stream_snapshot.empty else 0
-    batch_pairs = int(batch_snapshot["currency_pair"].nunique()) if not batch_snapshot.empty else 0
-    avg_stream_gap = _mean_abs(stream_snapshot["pct_from_vwap"]) if not stream_snapshot.empty else 0.0
-    avg_batch_change = _mean_abs(batch_snapshot["pct_change"]) if not batch_snapshot.empty else 0.0
+    live_assets = (
+        int(stream_snapshot["coin"].nunique()) if not stream_snapshot.empty else 0
+    )
+    batch_pairs = (
+        int(batch_snapshot["currency_pair"].nunique())
+        if not batch_snapshot.empty
+        else 0
+    )
+    avg_stream_gap = (
+        _mean_abs(stream_snapshot["pct_from_vwap"])
+        if not stream_snapshot.empty
+        else 0.0
+    )
+    avg_batch_change = (
+        _mean_abs(batch_snapshot["pct_change"]) if not batch_snapshot.empty else 0.0
+    )
 
     return {
         "live_assets": live_assets,
         "batch_pairs": batch_pairs,
         "avg_stream_gap": avg_stream_gap,
         "avg_batch_change": avg_batch_change,
-        "latest_stream_time": None if stream_snapshot.empty else stream_snapshot.iloc[0]["event_time"],
-        "latest_batch_date": None if batch_snapshot.empty else batch_snapshot.iloc[0]["rate_date"],
+        "latest_stream_time": None
+        if stream_snapshot.empty
+        else stream_snapshot.iloc[0]["event_time"],
+        "latest_batch_date": None
+        if batch_snapshot.empty
+        else batch_snapshot.iloc[0]["rate_date"],
         "stream_rows": len(stream_snapshot),
         "batch_rows": len(batch_snapshot),
     }
@@ -414,20 +576,35 @@ def fetch_pipeline_health() -> dict:
     latest_batch_date = snapshot.get("latest_batch_date")
 
     if pd.notna(latest_stream_time):
-        delay_seconds = max((pd.Timestamp.now(tz="UTC") - pd.to_datetime(latest_stream_time, utc=True)).total_seconds(), 0)
+        delay_seconds = max(
+            (
+                pd.Timestamp.now(tz="UTC")
+                - pd.to_datetime(latest_stream_time, utc=True)
+            ).total_seconds(),
+            0,
+        )
     else:
         delay_seconds = 0.0
 
-    consumer_lag = max(int(snapshot.get("raw_rows_5m", 0)) - int(snapshot.get("enriched_rows_5m", 0)), 0)
+    consumer_lag = max(
+        int(snapshot.get("raw_rows_5m", 0)) - int(snapshot.get("enriched_rows_5m", 0)),
+        0,
+    )
     return {
-        "kafka_status": "Healthy" if int(snapshot.get("raw_rows_5m", 0)) > 0 else "No data",
-        "consumer_status": "Running" if int(snapshot.get("enriched_rows_5m", 0)) > 0 else "Waiting",
+        "kafka_status": "Healthy"
+        if int(snapshot.get("raw_rows_5m", 0)) > 0
+        else "No data",
+        "consumer_status": "Running"
+        if int(snapshot.get("enriched_rows_5m", 0)) > 0
+        else "Waiting",
         "failed_writes": 0,
         "last_tick_delay_s": round(delay_seconds, 1),
         "consumer_lag": consumer_lag,
         "freshness_sla_s": 10,
         "uptime_pct": 99.9 if int(snapshot.get("enriched_rows_5m", 0)) > 0 else 0.0,
-        "airflow_last_run": "success" if int(snapshot.get("batch_rows_today", 0)) > 0 else "pending",
+        "airflow_last_run": "success"
+        if int(snapshot.get("batch_rows_today", 0)) > 0
+        else "pending",
         "latest_stream_time": latest_stream_time,
         "latest_batch_date": latest_batch_date,
         "latest_raw_time": latest_raw_time,

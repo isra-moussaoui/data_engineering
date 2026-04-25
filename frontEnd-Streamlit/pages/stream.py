@@ -3,7 +3,11 @@ from __future__ import annotations
 import pandas as pd
 import streamlit as st
 
-from components.charts import render_deviation_chart, render_event_table, render_price_vwap_chart
+from components.charts import (
+    render_deviation_chart,
+    render_event_table,
+    render_price_vwap_chart,
+)
 from data.sources import get_live_events, get_live_series, get_live_snapshot
 
 st.title("Live Crypto Feed")
@@ -38,7 +42,9 @@ if not snapshot.empty:
         metrics[0].metric("last price", f"${row.iloc[0]['price_usd']:,.2f}")
         metrics[1].metric("vwap 1m", f"${row.iloc[0]['vwap_1min']:,.2f}")
         metrics[2].metric("signal", f"{row.iloc[0]['pct_from_vwap']:.2f}%")
-        metrics[3].metric("last event", pd.to_datetime(row.iloc[0]["event_time"]).strftime("%H:%M:%S"))
+        metrics[3].metric(
+            "last event", pd.to_datetime(row.iloc[0]["event_time"]).strftime("%H:%M:%S")
+        )
 
 render_price_vwap_chart(series, title=f"{coin} price vs VWAP")
 render_deviation_chart(snapshot, title="cross-asset deviation")

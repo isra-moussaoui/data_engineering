@@ -8,10 +8,12 @@ try:
     _pydantic_settings = importlib.import_module("pydantic_settings")
     BaseSettings = _pydantic_settings.BaseSettings
     SettingsConfigDict = _pydantic_settings.SettingsConfigDict
-except ModuleNotFoundError:  # pragma: no cover - fallback for environments without the package
+except (
+    ModuleNotFoundError
+):  # pragma: no cover - fallback for environments without the package
+
     class SettingsConfigDict(dict):
         pass
-
 
     class BaseSettings:
         model_config = SettingsConfigDict()
@@ -20,10 +22,21 @@ except ModuleNotFoundError:  # pragma: no cover - fallback for environments with
             config = getattr(self, "model_config", {})
             prefix = config.get("env_prefix", "")
             for name, default in self.__class__.__dict__.items():
-                if name.startswith("_") or name in {"model_config"} or callable(default) or isinstance(default, property):
+                if (
+                    name.startswith("_")
+                    or name in {"model_config"}
+                    or callable(default)
+                    or isinstance(default, property)
+                ):
                     continue
-                value = overrides.get(name, os.getenv(f"{prefix}{name.upper()}", default))
-                if isinstance(default, int) and isinstance(value, str) and value.isdigit():
+                value = overrides.get(
+                    name, os.getenv(f"{prefix}{name.upper()}", default)
+                )
+                if (
+                    isinstance(default, int)
+                    and isinstance(value, str)
+                    and value.isdigit()
+                ):
                     value = int(value)
                 setattr(self, name, value)
 
@@ -34,7 +47,9 @@ class MinioSettings(BaseSettings):
     secret_key: str = "minioadmin"
     bucket_name: str = "currency-raw"
 
-    model_config = SettingsConfigDict(env_prefix="MINIO_", env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_prefix="MINIO_", env_file=".env", extra="ignore"
+    )
 
 
 class PostgresSettings(BaseSettings):
@@ -44,7 +59,9 @@ class PostgresSettings(BaseSettings):
     user: str = "postgres"
     password: str = "postgres"
 
-    model_config = SettingsConfigDict(env_prefix="POSTGRES_", env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_prefix="POSTGRES_", env_file=".env", extra="ignore"
+    )
 
     @property
     def sqlalchemy_url(self) -> str:
@@ -68,7 +85,9 @@ class StreamingSettings(BaseSettings):
     max_backoff_seconds: int = 60
     vwap_window_seconds: int = 60
 
-    model_config = SettingsConfigDict(env_prefix="KAFKA_", env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_prefix="KAFKA_", env_file=".env", extra="ignore"
+    )
 
 
 @lru_cache

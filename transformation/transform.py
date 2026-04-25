@@ -57,7 +57,12 @@ def t1_clean_forex(raw: dict) -> pd.DataFrame:
 
 def t1_clean_crypto(raw: dict) -> pd.DataFrame:
     rows = [
-        {"currency_pair": f"{coin}/USD", "rate": float(data["amount"]), "base": coin, "quote": "USD"}
+        {
+            "currency_pair": f"{coin}/USD",
+            "rate": float(data["amount"]),
+            "base": coin,
+            "quote": "USD",
+        }
         for coin, data in raw["rates"].items()
         if data.get("amount") is not None
     ]
@@ -85,7 +90,13 @@ def _append_derived_forex_pairs(df_today: pd.DataFrame) -> pd.DataFrame:
     eur_gbp = pd.to_numeric(by_pair.at["EUR/GBP", "rate"], errors="coerce")
     eur_jpy = pd.to_numeric(by_pair.at["EUR/JPY", "rate"], errors="coerce")
 
-    if pd.isna(eur_usd) or pd.isna(eur_gbp) or pd.isna(eur_jpy) or eur_gbp == 0 or eur_usd == 0:
+    if (
+        pd.isna(eur_usd)
+        or pd.isna(eur_gbp)
+        or pd.isna(eur_jpy)
+        or eur_gbp == 0
+        or eur_usd == 0
+    ):
         return df_today
 
     template = by_pair.loc["EUR/USD"].to_dict()
@@ -110,7 +121,9 @@ def _append_derived_forex_pairs(df_today: pd.DataFrame) -> pd.DataFrame:
 
     derived_df = pd.DataFrame(derived_rows)
     combined = pd.concat([df_today, derived_df], ignore_index=True)
-    combined = combined.drop_duplicates(subset=["currency_pair", "rate_date", "source"], keep="last")
+    combined = combined.drop_duplicates(
+        subset=["currency_pair", "rate_date", "source"], keep="last"
+    )
     logger.info("T1 forex: added %s derived cross pairs", len(derived_df))
     return combined
 
@@ -164,7 +177,9 @@ def t3_unify_and_load(df_forex: pd.DataFrame, df_crypto: pd.DataFrame, engine):
 
     session = get_session()
     try:
-        session.query(UnifiedRate).filter(UnifiedRate.rate_date == date.today()).delete(synchronize_session=False)
+        session.query(UnifiedRate).filter(UnifiedRate.rate_date == date.today()).delete(
+            synchronize_session=False
+        )
 
         for _, row in df.iterrows():
             prev_rate = _normalize_nullable_numeric(row.get("prev_rate"))
@@ -177,7 +192,9 @@ def t3_unify_and_load(df_forex: pd.DataFrame, df_crypto: pd.DataFrame, engine):
                     rate=row["rate"],
                     prev_rate=prev_rate,
                     pct_change=pct_change,
-                    rate_date=row["rate_date"].date() if hasattr(row["rate_date"], "date") else row["rate_date"],
+                    rate_date=row["rate_date"].date()
+                    if hasattr(row["rate_date"], "date")
+                    else row["rate_date"],
                     source=row["source"],
                     ingested_at=row["ingested_at"],
                     transformed_at=row["transformed_at"],

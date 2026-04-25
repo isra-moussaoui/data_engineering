@@ -35,7 +35,13 @@ st.markdown(
 )
 
 render_market_cards(
-    snapshot.rename(columns={"currency_pair": "pair", "rate": "price_usd", "pct_change": "change_24h"})
+    snapshot.rename(
+        columns={
+            "currency_pair": "pair",
+            "rate": "price_usd",
+            "pct_change": "change_24h",
+        }
+    )
 )
 render_rate_chart(series, title=f"{pair} daily rate movement")
 

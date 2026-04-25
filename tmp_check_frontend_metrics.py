@@ -4,7 +4,11 @@ from pathlib import Path
 root = Path(__file__).resolve().parent
 sys.path.insert(0, str(root / "frontEnd-Streamlit"))
 
-from services.db import fetch_dashboard_overview, fetch_batch_series, fetch_batch_snapshot
+from services.db import (
+    fetch_dashboard_overview,
+    fetch_batch_series,
+    fetch_batch_snapshot,
+)
 
 print("overview", fetch_dashboard_overview())
 snapshot = fetch_batch_snapshot(limit=20)

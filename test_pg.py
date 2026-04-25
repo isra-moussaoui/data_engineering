@@ -5,7 +5,7 @@ cconn = psycopg.connect(
     port=os.getenv("POSTGRES_PORT", "5432"),
     dbname=os.getenv("POSTGRES_DB", "currency_db"),
     user=os.getenv("POSTGRES_USER", "postgres"),
-    password=os.getenv("POSTGRES_PASSWORD", "postgres")
+    password=os.getenv("POSTGRES_PASSWORD", "postgres"),
 )
 
 print("Connected successfully")

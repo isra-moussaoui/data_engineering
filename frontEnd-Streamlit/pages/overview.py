@@ -177,14 +177,20 @@ batch_snapshot = get_batch_snapshot()
 health = get_pipeline_health()
 
 st.sidebar.header("Control Panel")
-selected_coin = st.sidebar.selectbox("Live asset", options=["BTC", "ETH", "SOL"], index=0)
-selected_window = st.sidebar.selectbox("Live window", options=["30m", "1h", "6h"], index=1)
+selected_coin = st.sidebar.selectbox(
+    "Live asset", options=["BTC", "ETH", "SOL"], index=0
+)
+selected_window = st.sidebar.selectbox(
+    "Live window", options=["30m", "1h", "6h"], index=1
+)
 selected_pair = st.sidebar.selectbox(
     "Batch pair",
     options=["EUR/USD", "GBP/USD", "USD/JPY", "BTC/USD", "ETH/USD", "SOL/USD"],
     index=0,
 )
-selected_pair_window = st.sidebar.selectbox("Batch lookback", options=["7d", "14d", "30d"], index=2)
+selected_pair_window = st.sidebar.selectbox(
+    "Batch lookback", options=["7d", "14d", "30d"], index=2
+)
 st.sidebar.metric("UTC", datetime.now(timezone.utc).strftime("%H:%M:%S"))
 
 st.title("Overview")
@@ -199,65 +205,74 @@ st.markdown(
         <div class="hero-sub">
             Institutional-grade visibility over live crypto flow, daily FX rates, and ingestion reliability.
         </div>
-        <span class="tiny-pill">Updated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC</span>
+        <span class="tiny-pill">Updated: {datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")} UTC</span>
     </div>
     
     <div class="metric-grid">
         <div class="metric-card">
             <div class="metric-label">Live Assets</div>
-            <div class="metric-value">{overview['live_assets']}</div>
+            <div class="metric-value">{overview["live_assets"]}</div>
         </div>
         <div class="metric-card">
             <div class="metric-label">Daily Pairs</div>
-            <div class="metric-value">{overview['batch_pairs']}</div>
+            <div class="metric-value">{overview["batch_pairs"]}</div>
         </div>
         <div class="metric-card">
             <div class="metric-label">Live Tick Delay</div>
-            <div class="metric-value metric-highlight">{health['last_tick_delay_s']:.1f}s</div>
+            <div class="metric-value metric-highlight">{health["last_tick_delay_s"]:.1f}s</div>
         </div>
         <div class="metric-card">
             <div class="metric-label">Latest Batch Date</div>
-            <div class="metric-value">{health['latest_batch_date'] if health['latest_batch_date'] is not None else 'n/a'}</div>
+            <div class="metric-value">{health["latest_batch_date"] if health["latest_batch_date"] is not None else "n/a"}</div>
         </div>
         <div class="metric-card">
             <div class="metric-label">Stream Rows</div>
-            <div class="metric-value">{overview['stream_rows']}</div>
+            <div class="metric-value">{overview["stream_rows"]}</div>
         </div>
         <div class="metric-card">
             <div class="metric-label">Batch Rows</div>
-            <div class="metric-value">{overview['batch_rows']}</div>
+            <div class="metric-value">{overview["batch_rows"]}</div>
         </div>
         <div class="metric-card">
             <div class="metric-label">Avg Stream Gap</div>
-            <div class="metric-value">{overview['avg_stream_gap']:.2f}%</div>
+            <div class="metric-value">{overview["avg_stream_gap"]:.2f}%</div>
         </div>
         <div class="metric-card">
             <div class="metric-label">Avg Batch Change</div>
-            <div class="metric-value">{overview['avg_batch_change']:.2f}%</div>
+            <div class="metric-value">{overview["avg_batch_change"]:.2f}%</div>
         </div>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
-st.markdown('<span class="section-pill"><span class="status-dot"></span>Live market board</span>', unsafe_allow_html=True)
+st.markdown(
+    '<span class="section-pill"><span class="status-dot"></span>Live market board</span>',
+    unsafe_allow_html=True,
+)
 render_market_cards(stream_snapshot)
 st.markdown("<br>", unsafe_allow_html=True)
 chart_col, side_col = st.columns([2.1, 1])
 with chart_col:
-    lookback_minutes = 30 if selected_window == "30m" else 60 if selected_window == "1h" else 360
+    lookback_minutes = (
+        30 if selected_window == "30m" else 60 if selected_window == "1h" else 360
+    )
     live_df = get_live_series(
         coin=selected_coin,
         lookback_minutes=lookback_minutes,
     )
     if live_df.empty and lookback_minutes == 30:
         live_df = get_live_series(coin=selected_coin, lookback_minutes=60)
-        st.caption("No rows found in the last 30 minutes, showing the last 1 hour instead.")
+        st.caption(
+            "No rows found in the last 30 minutes, showing the last 1 hour instead."
+        )
     render_price_vwap_chart(live_df, title=f"{selected_coin} live price vs VWAP")
 with side_col:
     render_deviation_chart(stream_snapshot, title="Current deviation by asset")
 
-st.markdown('<span class="section-pill">Daily batch rates</span>', unsafe_allow_html=True)
+st.markdown(
+    '<span class="section-pill">Daily batch rates</span>', unsafe_allow_html=True
+)
 batch_board = batch_snapshot.rename(
     columns={"currency_pair": "pair", "rate": "price_usd", "pct_change": "change_24h"}
 )
@@ -268,37 +283,55 @@ batch_chart_col, batch_table_col = st.columns([1.3, 1])
 with batch_chart_col:
     batch_df = get_batch_series(
         currency_pair=selected_pair,
-        lookback_days=7 if selected_pair_window == "7d" else 14 if selected_pair_window == "14d" else 30,
+        lookback_days=7
+        if selected_pair_window == "7d"
+        else 14
+        if selected_pair_window == "14d"
+        else 30,
     )
     render_rate_chart(batch_df, title=f"{selected_pair} daily rate movement")
 with batch_table_col:
     render_event_table(batch_snapshot)
 
-st.markdown('<span class="section-pill"><span class="status-dot"></span>Recent live tape</span>', unsafe_allow_html=True)
+st.markdown(
+    '<span class="section-pill"><span class="status-dot"></span>Recent live tape</span>',
+    unsafe_allow_html=True,
+)
 events = get_live_events(limit=30)
 render_event_table(events)
 
-st.markdown('<span class="section-pill">Why teams choose PulseFX</span>', unsafe_allow_html=True)
+st.markdown(
+    '<span class="section-pill">Why teams choose PulseFX</span>', unsafe_allow_html=True
+)
 story = st.columns(3)
-story[0].markdown("""
+story[0].markdown(
+    """
 <div class="hero-box">
     <div class="hero-kicker">LIVE CONFIDENCE</div>
     <div class="hero-sub">Monitor stream quality in real time with pricing, VWAP drift, and operational recency.</div>
 </div>
-""", unsafe_allow_html=True)
-story[1].markdown("""
+""",
+    unsafe_allow_html=True,
+)
+story[1].markdown(
+    """
 <div class="hero-box">
     <div class="hero-kicker">BATCH TRUST</div>
     <div class="hero-sub">Validate transformed market rates across sources and track day-over-day currency moves.</div>
 </div>
-""", unsafe_allow_html=True)
-story[2].markdown("""
+""",
+    unsafe_allow_html=True,
+)
+story[2].markdown(
+    """
 <div class="hero-box">
     <div class="hero-kicker">OPS CONTROL</div>
     <div class="hero-sub">Detect ingestion bottlenecks quickly through lag and write-throughput history from production tables.</div>
 </div>
 </br></br></br></br></br>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 if health["latest_stream_time"] is not None:
     st.caption(f"Latest live event: {health['latest_stream_time']}")

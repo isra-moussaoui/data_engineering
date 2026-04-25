@@ -37,7 +37,9 @@ VWAP_WINDOW_S = STREAMING.vwap_window_seconds
 
 
 def ensure_tables(engine):
-    Base.metadata.create_all(engine, tables=[RawCryptoStream.__table__, CryptoStreamEnriched.__table__])
+    Base.metadata.create_all(
+        engine, tables=[RawCryptoStream.__table__, CryptoStreamEnriched.__table__]
+    )
     logger.info("Tables and indexes ready")
 
 
@@ -53,7 +55,14 @@ def insert_raw(session, record: dict, event_time: datetime):
     )
 
 
-def insert_enriched(session, coin: str, pair: str, price: float, vwap: float | None, event_time: datetime):
+def insert_enriched(
+    session,
+    coin: str,
+    pair: str,
+    price: float,
+    vwap: float | None,
+    event_time: datetime,
+):
     pct = round((price - vwap) / vwap * 100, 4) if vwap else None
     session.add(
         CryptoStreamEnriched(
@@ -121,7 +130,9 @@ def make_consumer(retries: int = 10) -> KafkaConsumer:
             logger.info("Consumer connected to Kafka")
             return consumer
         except NoBrokersAvailable:
-            logger.warning(f"Kafka not ready (attempt {attempt}/{retries}), retrying in {wait}s…")
+            logger.warning(
+                f"Kafka not ready (attempt {attempt}/{retries}), retrying in {wait}s…"
+            )
             time.sleep(wait)
             wait = min(wait * 2, MAX_BACKOFF)
     raise RuntimeError("Could not connect to Kafka")
