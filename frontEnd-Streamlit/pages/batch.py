@@ -5,7 +5,8 @@ import streamlit as st
 from components.charts import render_event_table, render_market_cards, render_rate_chart
 from data.sources import get_batch_series, get_batch_snapshot
 
-st.title("batch")
+# daily batch FX and crypto rates dashboard
+st.title("Market Data")
 st.caption("Daily FX and crypto rates produced by the batch pipeline")
 
 st.sidebar.subheader("batch filters")

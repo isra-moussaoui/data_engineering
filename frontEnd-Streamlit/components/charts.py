@@ -5,46 +5,64 @@ import plotly.graph_objects as go
 import streamlit as st
 from plotly.subplots import make_subplots
 
-
 def render_market_cards(df: pd.DataFrame) -> None:
+    import streamlit as st
+    import pandas as pd
+
     if df.empty:
         st.info("No live market rows available yet.")
         return
 
-    cols = st.columns(len(df))
-    for idx, row in df.reset_index(drop=True).iterrows():
-        has_change = "change_24h" in row.index and pd.notna(row.get("change_24h"))
-        change_value = row.get("change_24h", row.get("pct_change", row.get("pct_from_vwap", 0.0)))
-        change_label = "24h" if has_change else "signal"
-        delta_color = "#02C076" if float(change_value) >= 0 else "#F6465D"
-        direction = "+" if float(change_value) >= 0 else ""
-        secondary_value = row.get("vwap_1min", row.get("prev_rate", None))
-        secondary_label = "VWAP 1m" if "vwap_1min" in row.index else "Prev rate"
-        cols[idx].markdown(
-            f"""
-            <div style="
-                background: rgba(24, 26, 32, 0.8);
-                border: 1px solid rgba(255, 255, 255, 0.05);
-                border-radius: 8px;
-                padding: 14px 16px;
-                box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-                backdrop-filter: blur(16px);
-                transition: transform 0.2s ease, border-color 0.2s ease;
-            " onmouseover="this.style.borderColor='rgba(2, 192, 118, 0.3)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.05)'; this.style.transform='translateY(0)';">
-                <div style="font-size: 0.9rem; color: #BBCABD; font-family: 'Space Grotesk', sans-serif;">{row['pair']}</div>
-                <div style="font-size: 1.6rem; font-weight: 700; color: #E1E2E7; margin-top: 2px;">
-                    {f'${row["price_usd"]:,.2f}' if pd.notna(row.get('price_usd')) else 'n/a'}
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-top: 8px;">
-                    <span style="font-size: 0.85rem; color: #869488; font-family: 'Inter', sans-serif;">{secondary_label}: {f'${secondary_value:,.2f}' if pd.notna(secondary_value) else 'n/a'}</span>
-                    <span style="font-size: 0.85rem; color: {delta_color}; font-weight: 600; font-family: 'Inter', sans-serif;">
-                        {direction}{float(change_value):.2f}% {change_label}
-                    </span>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+    df = df.head(6).reset_index(drop=True)
+
+    for i in range(0, len(df), 3):
+        cols = st.columns(3)
+
+        for j in range(len(df.iloc[i:i+3])):
+            row = df.iloc[i + j]
+
+            # --- Change value ---
+            has_change = "change_24h" in df.columns and pd.notna(row.get("change_24h"))
+            change_value = row.get(
+                "change_24h",
+                row.get("pct_change", row.get("pct_from_vwap", 0.0))
+            )
+
+            try:
+                change_value = float(change_value)
+            except:
+                change_value = 0.0
+
+            change_label = "24h" if has_change else "signal"
+            delta_color = "#02C076" if change_value >= 0 else "#F6465D"
+            direction = "+" if change_value >= 0 else ""
+
+            price = (
+                f'${row["price_usd"]:,.2f}'
+                if pd.notna(row.get("price_usd")) else "n/a"
+            )
+
+            card_html = f"""
+<div style="background:rgba(24,26,32,0.85);
+border:1px solid rgba(255,255,255,0.05);
+border-radius:10px;
+padding:16px;
+box-shadow:0 6px 25px rgba(0,0,0,0.15);
+backdrop-filter:blur(12px);
+transition:all 0.2s ease;"
+onmouseover="this.style.borderColor='rgba(2,192,118,0.4)';this.style.transform='translateY(-3px)';"
+onmouseout="this.style.borderColor='rgba(255,255,255,0.05)';this.style.transform='translateY(0)';">
+
+<div style="font-size:0.9rem;color:#BBCABD;">{row['pair']}</div>
+
+<div style="font-size:1.7rem;font-weight:700;color:#E1E2E7;margin-top:4px;">
+{price}
+</div>
+
+</div>
+"""
+
+            cols[j].markdown(card_html, unsafe_allow_html=True)
 
 
 def render_price_vwap_chart(df: pd.DataFrame, title: str) -> None:

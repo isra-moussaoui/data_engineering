@@ -34,6 +34,7 @@ uv run streamlit run app.py --server.port 20001
 ```text
 frontEnd-Streamlit/
 	app.py
+	pages/overview.py
 	pages/
 		stream.py
 		batch.py
@@ -47,7 +48,7 @@ frontEnd-Streamlit/
 ## Product notes
 
 - The frontend now reads from real Postgres tables populated by the stream and batch pipelines.
-- Page filenames are short, lowercase, and meaningful for cleaner navigation.
+- Sidebar navigation is now explicitly labeled as Overview, Market Data, Live Crypto Feed, and Data Reliability & Freshness.
 - The health timeline is computed from real Kafka-enriched rows (`event_time`, `processed_at`) and no synthetic values are used.
 - Sidebar controls are available on all pages for live filtering.
 

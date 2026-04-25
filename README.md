@@ -237,7 +237,7 @@ Dependency rule:
 ### PostgreSQL
 
 - Host: `localhost`
-- Port: `5432`
+- Port: `55432`
 - User: `postgres`
 - Password: `postgres`
 - Database: `currency_db`

@@ -6,8 +6,8 @@ import streamlit as st
 from components.charts import render_deviation_chart, render_event_table, render_price_vwap_chart
 from data.sources import get_live_events, get_live_series, get_live_snapshot
 
-st.title("stream")
-st.caption("Live crypto execution stream from Kafka and transformation pipeline")
+st.title("Live Crypto Feed")
+st.caption("Live crypto execution stream")
 
 st.sidebar.subheader("stream filters")
 coin = st.sidebar.selectbox("asset", options=["BTC", "ETH", "SOL"], index=0)

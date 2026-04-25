@@ -3,9 +3,12 @@ from __future__ import annotations
 import os
 import logging
 import importlib
+from pathlib import Path
+from datetime import datetime
 
 import pandas as pd
 import psycopg
+from dotenv import load_dotenv
 
 try:
     _pydantic_settings = importlib.import_module("pydantic_settings")
@@ -31,6 +34,12 @@ except ModuleNotFoundError:  # pragma: no cover - fallback for environments with
                 setattr(self, name, value)
 
 logger = logging.getLogger(__name__)
+FRONTEND_DIR = Path(__file__).resolve().parent.parent
+ENV_FILE = FRONTEND_DIR / ".env"
+
+# Prefer the project-local frontend settings when running the app locally, but
+# leave container-provided environment variables untouched in live mode.
+load_dotenv(ENV_FILE, override=os.getenv("APP_MODE", "").lower() != "live")
 
 
 class DatabaseSettings(BaseSettings):
@@ -40,7 +49,7 @@ class DatabaseSettings(BaseSettings):
     user: str = "postgres"
     password: str = "postgres"
 
-    model_config = SettingsConfigDict(env_prefix="POSTGRES_", env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_prefix="POSTGRES_", env_file=str(ENV_FILE), extra="ignore")
 
     @property
     def dsn(self) -> str:
@@ -71,19 +80,33 @@ STREAM_TIMESERIES_SQL = """
 STREAM_EVENTS_SQL = """
     SELECT coin, pair, price_usd, vwap_1min, pct_from_vwap, event_time, processed_at
     FROM crypto_stream_enriched
-    WHERE (%(coin)s IS NULL OR coin = %(coin)s)
+    WHERE (%(coin)s::text IS NULL OR coin = %(coin)s::text)
     ORDER BY event_time DESC
     LIMIT %(limit)s;
 """
 
 BATCH_SNAPSHOT_SQL = """
-    WITH latest_date AS (
-        SELECT MAX(rate_date) AS rate_date
+    WITH ranked AS (
+        SELECT
+            currency_pair,
+            base,
+            quote,
+            rate,
+            prev_rate,
+            pct_change,
+            rate_date,
+            source,
+            ingested_at,
+            transformed_at,
+            ROW_NUMBER() OVER (
+                PARTITION BY currency_pair
+                ORDER BY rate_date DESC, transformed_at DESC NULLS LAST, id DESC
+            ) AS rn
         FROM unified_rates
     )
     SELECT currency_pair, base, quote, rate, prev_rate, pct_change, rate_date, source, ingested_at, transformed_at
-    FROM unified_rates
-    WHERE rate_date = (SELECT rate_date FROM latest_date)
+    FROM ranked
+    WHERE rn = 1
     ORDER BY source, currency_pair
     LIMIT %(limit)s;
 """
@@ -156,11 +179,142 @@ def test_connection() -> bool:
 
 def _read_df(query: str, params: dict | None = None) -> pd.DataFrame:
     with psycopg.connect(_dsn()) as conn:
-        return pd.read_sql(query, conn, params=params)
+        with conn.cursor() as cur:
+            cur.execute(query, params or {})
+            rows = cur.fetchall()
+            columns = [col.name for col in cur.description] if cur.description else []
+        return pd.DataFrame(rows, columns=columns)
 
 
 def _empty_df(columns: list[str]) -> pd.DataFrame:
     return pd.DataFrame(columns=columns)
+
+
+def _to_numeric(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
+    if df.empty:
+        return df
+    out = df.copy()
+    for col in columns:
+        if col in out.columns:
+            out[col] = pd.to_numeric(out[col], errors="coerce")
+    return out
+
+
+def _mean_abs(values: pd.Series) -> float:
+    numeric = pd.to_numeric(values, errors="coerce")
+    numeric = numeric.replace([float("inf"), float("-inf")], pd.NA).dropna()
+    return float(numeric.abs().mean()) if not numeric.empty else 0.0
+
+
+def _derive_snapshot_cross_pairs(df: pd.DataFrame) -> pd.DataFrame:
+    if df.empty or "currency_pair" not in df.columns:
+        return df
+
+    out = _to_numeric(df, ["rate", "prev_rate", "pct_change"])
+    by_pair = out.set_index("currency_pair")
+
+    required = {"EUR/USD", "EUR/GBP", "EUR/JPY"}
+    if not required.issubset(set(by_pair.index)):
+        return out
+
+    derived_rows: list[dict] = []
+
+    if "GBP/USD" not in by_pair.index:
+        eur_usd = by_pair.at["EUR/USD", "rate"]
+        eur_gbp = by_pair.at["EUR/GBP", "rate"]
+        prev_eur_usd = by_pair.at["EUR/USD", "prev_rate"]
+        prev_eur_gbp = by_pair.at["EUR/GBP", "prev_rate"]
+        if pd.notna(eur_usd) and pd.notna(eur_gbp) and eur_gbp != 0:
+            rate = float(eur_usd / eur_gbp)
+            prev_rate = None
+            pct_change = None
+            if pd.notna(prev_eur_usd) and pd.notna(prev_eur_gbp) and prev_eur_gbp != 0:
+                prev_rate = float(prev_eur_usd / prev_eur_gbp)
+                if prev_rate != 0:
+                    pct_change = round(((rate - prev_rate) / prev_rate) * 100, 4)
+            derived_rows.append(
+                {
+                    "currency_pair": "GBP/USD",
+                    "base": "GBP",
+                    "quote": "USD",
+                    "rate": rate,
+                    "prev_rate": prev_rate,
+                    "pct_change": pct_change,
+                    "rate_date": by_pair.at["EUR/USD", "rate_date"],
+                    "source": "derived_frankfurter",
+                    "ingested_at": by_pair.at["EUR/USD", "ingested_at"],
+                    "transformed_at": datetime.utcnow(),
+                }
+            )
+
+    if "USD/JPY" not in by_pair.index:
+        eur_jpy = by_pair.at["EUR/JPY", "rate"]
+        eur_usd = by_pair.at["EUR/USD", "rate"]
+        prev_eur_jpy = by_pair.at["EUR/JPY", "prev_rate"]
+        prev_eur_usd = by_pair.at["EUR/USD", "prev_rate"]
+        if pd.notna(eur_jpy) and pd.notna(eur_usd) and eur_usd != 0:
+            rate = float(eur_jpy / eur_usd)
+            prev_rate = None
+            pct_change = None
+            if pd.notna(prev_eur_jpy) and pd.notna(prev_eur_usd) and prev_eur_usd != 0:
+                prev_rate = float(prev_eur_jpy / prev_eur_usd)
+                if prev_rate != 0:
+                    pct_change = round(((rate - prev_rate) / prev_rate) * 100, 4)
+            derived_rows.append(
+                {
+                    "currency_pair": "USD/JPY",
+                    "base": "USD",
+                    "quote": "JPY",
+                    "rate": rate,
+                    "prev_rate": prev_rate,
+                    "pct_change": pct_change,
+                    "rate_date": by_pair.at["EUR/USD", "rate_date"],
+                    "source": "derived_frankfurter",
+                    "ingested_at": by_pair.at["EUR/USD", "ingested_at"],
+                    "transformed_at": datetime.utcnow(),
+                }
+            )
+
+    if not derived_rows:
+        return out
+
+    return pd.concat([out, pd.DataFrame(derived_rows)], ignore_index=True)
+
+
+def _derive_batch_series(currency_pair: str, lookback_days: int) -> pd.DataFrame:
+    formulas = {
+        "GBP/USD": ("EUR/USD", "EUR/GBP", "GBP", "USD"),
+        "USD/JPY": ("EUR/JPY", "EUR/USD", "USD", "JPY"),
+    }
+    if currency_pair not in formulas:
+        return _empty_df(["currency_pair", "base", "quote", "rate", "prev_rate", "pct_change", "rate_date", "source", "ingested_at", "transformed_at"])
+
+    numerator_pair, denominator_pair, base, quote = formulas[currency_pair]
+    numerator = _read_df(BATCH_SERIES_SQL, {"currency_pair": numerator_pair, "days": lookback_days})
+    denominator = _read_df(BATCH_SERIES_SQL, {"currency_pair": denominator_pair, "days": lookback_days})
+
+    if numerator.empty or denominator.empty:
+        return _empty_df(["currency_pair", "base", "quote", "rate", "prev_rate", "pct_change", "rate_date", "source", "ingested_at", "transformed_at"])
+
+    numerator = _to_numeric(numerator, ["rate"])[["rate_date", "rate"]].rename(columns={"rate": "num_rate"})
+    denominator = _to_numeric(denominator, ["rate"])[["rate_date", "rate"]].rename(columns={"rate": "den_rate"})
+    merged = numerator.merge(denominator, on="rate_date", how="inner").sort_values("rate_date")
+    merged = merged[merged["den_rate"].notna() & (merged["den_rate"] != 0)]
+
+    if merged.empty:
+        return _empty_df(["currency_pair", "base", "quote", "rate", "prev_rate", "pct_change", "rate_date", "source", "ingested_at", "transformed_at"])
+
+    merged["rate"] = merged["num_rate"] / merged["den_rate"]
+    merged["prev_rate"] = merged["rate"].shift(1)
+    merged["pct_change"] = ((merged["rate"] - merged["prev_rate"]) / merged["prev_rate"] * 100).round(4)
+    merged["currency_pair"] = currency_pair
+    merged["base"] = base
+    merged["quote"] = quote
+    merged["source"] = "derived_frankfurter"
+    merged["ingested_at"] = pd.NaT
+    merged["transformed_at"] = pd.NaT
+
+    return merged[["currency_pair", "base", "quote", "rate", "prev_rate", "pct_change", "rate_date", "source", "ingested_at", "transformed_at"]]
 
 
 def fetch_stream_snapshot(limit: int = 3) -> pd.DataFrame:
@@ -189,7 +343,9 @@ def fetch_stream_events(limit: int = 30, coin: str | None = None) -> pd.DataFram
 
 def fetch_batch_snapshot(limit: int = 10) -> pd.DataFrame:
     try:
-        return _read_df(BATCH_SNAPSHOT_SQL, {"limit": limit})
+        base_df = _read_df(BATCH_SNAPSHOT_SQL, {"limit": max(limit, 200)})
+        enriched = _derive_snapshot_cross_pairs(base_df)
+        return enriched.sort_values(["source", "currency_pair"]).head(limit)
     except Exception as exc:
         logger.warning("fetch_batch_snapshot failed: %s", exc)
         return _empty_df(["currency_pair", "base", "quote", "rate", "prev_rate", "pct_change", "rate_date", "source", "ingested_at", "transformed_at"])
@@ -197,7 +353,10 @@ def fetch_batch_snapshot(limit: int = 10) -> pd.DataFrame:
 
 def fetch_batch_series(currency_pair: str = "EUR/USD", lookback_days: int = 30) -> pd.DataFrame:
     try:
-        return _read_df(BATCH_SERIES_SQL, {"currency_pair": currency_pair, "days": lookback_days})
+        direct = _read_df(BATCH_SERIES_SQL, {"currency_pair": currency_pair, "days": lookback_days})
+        if not direct.empty:
+            return direct
+        return _derive_batch_series(currency_pair=currency_pair, lookback_days=lookback_days)
     except Exception as exc:
         logger.warning("fetch_batch_series failed: %s", exc)
         return _empty_df(["currency_pair", "base", "quote", "rate", "prev_rate", "pct_change", "rate_date", "source", "ingested_at", "transformed_at"])
@@ -214,11 +373,13 @@ def fetch_ops_timeline(window_minutes: int = 120) -> pd.DataFrame:
 def fetch_dashboard_overview() -> dict:
     stream_snapshot = fetch_stream_snapshot()
     batch_snapshot = fetch_batch_snapshot()
+    stream_snapshot = _to_numeric(stream_snapshot, ["pct_from_vwap"])
+    batch_snapshot = _to_numeric(batch_snapshot, ["pct_change"])
 
     live_assets = int(stream_snapshot["coin"].nunique()) if not stream_snapshot.empty else 0
     batch_pairs = int(batch_snapshot["currency_pair"].nunique()) if not batch_snapshot.empty else 0
-    avg_stream_gap = float(stream_snapshot["pct_from_vwap"].abs().mean()) if not stream_snapshot.empty else 0.0
-    avg_batch_change = float(batch_snapshot["pct_change"].abs().mean()) if not batch_snapshot.empty else 0.0
+    avg_stream_gap = _mean_abs(stream_snapshot["pct_from_vwap"]) if not stream_snapshot.empty else 0.0
+    avg_batch_change = _mean_abs(batch_snapshot["pct_change"]) if not batch_snapshot.empty else 0.0
 
     return {
         "live_assets": live_assets,

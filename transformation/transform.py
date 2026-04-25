@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import date, datetime, timedelta
+from decimal import Decimal
 
 import boto3
 import pandas as pd
@@ -70,6 +71,50 @@ def t1_clean_crypto(raw: dict) -> pd.DataFrame:
     return df
 
 
+def _append_derived_forex_pairs(df_today: pd.DataFrame) -> pd.DataFrame:
+    if df_today.empty:
+        return df_today
+
+    required = {"EUR/USD", "EUR/GBP", "EUR/JPY"}
+    by_pair = df_today.set_index("currency_pair")
+
+    if not required.issubset(set(by_pair.index)):
+        return df_today
+
+    eur_usd = pd.to_numeric(by_pair.at["EUR/USD", "rate"], errors="coerce")
+    eur_gbp = pd.to_numeric(by_pair.at["EUR/GBP", "rate"], errors="coerce")
+    eur_jpy = pd.to_numeric(by_pair.at["EUR/JPY", "rate"], errors="coerce")
+
+    if pd.isna(eur_usd) or pd.isna(eur_gbp) or pd.isna(eur_jpy) or eur_gbp == 0 or eur_usd == 0:
+        return df_today
+
+    template = by_pair.loc["EUR/USD"].to_dict()
+    derived_rows = [
+        {
+            **template,
+            "currency_pair": "GBP/USD",
+            "base": "GBP",
+            "quote": "USD",
+            "rate": float(eur_usd / eur_gbp),
+            "source": "frankfurter_derived",
+        },
+        {
+            **template,
+            "currency_pair": "USD/JPY",
+            "base": "USD",
+            "quote": "JPY",
+            "rate": float(eur_jpy / eur_usd),
+            "source": "frankfurter_derived",
+        },
+    ]
+
+    derived_df = pd.DataFrame(derived_rows)
+    combined = pd.concat([df_today, derived_df], ignore_index=True)
+    combined = combined.drop_duplicates(subset=["currency_pair", "rate_date", "source"], keep="last")
+    logger.info("T1 forex: added %s derived cross pairs", len(derived_df))
+    return combined
+
+
 def t2_daily_change(df_today: pd.DataFrame, engine) -> pd.DataFrame:
     ensure_unified_table(engine)
 
@@ -90,10 +135,27 @@ def t2_daily_change(df_today: pd.DataFrame, engine) -> pd.DataFrame:
     df = df_today.merge(prev_df, on="currency_pair", how="left")
     df["rate"] = pd.to_numeric(df["rate"], errors="coerce")
     df["prev_rate"] = pd.to_numeric(df["prev_rate"], errors="coerce")
+    df.loc[df["prev_rate"] <= 0, "prev_rate"] = pd.NA
     df["pct_change"] = ((df["rate"] - df["prev_rate"]) / df["prev_rate"] * 100).round(4)
+    df["pct_change"] = df["pct_change"].replace([float("inf"), float("-inf")], pd.NA)
 
     logger.info(f"T2: computed % change for {df['pct_change'].notna().sum()} pairs")
     return df
+
+
+def _normalize_nullable_numeric(value):
+    if value is None:
+        return None
+    if isinstance(value, str) and value.strip().lower() == "nan":
+        return None
+    if isinstance(value, Decimal) and value.is_nan():
+        return None
+    try:
+        if pd.isna(value):
+            return None
+    except Exception:
+        pass
+    return value
 
 
 def t3_unify_and_load(df_forex: pd.DataFrame, df_crypto: pd.DataFrame, engine):
@@ -105,14 +167,16 @@ def t3_unify_and_load(df_forex: pd.DataFrame, df_crypto: pd.DataFrame, engine):
         session.query(UnifiedRate).filter(UnifiedRate.rate_date == date.today()).delete(synchronize_session=False)
 
         for _, row in df.iterrows():
+            prev_rate = _normalize_nullable_numeric(row.get("prev_rate"))
+            pct_change = _normalize_nullable_numeric(row.get("pct_change"))
             session.add(
                 UnifiedRate(
                     currency_pair=row["currency_pair"],
                     base=row["base"],
                     quote=row["quote"],
                     rate=row["rate"],
-                    prev_rate=row.get("prev_rate"),
-                    pct_change=row.get("pct_change"),
+                    prev_rate=prev_rate,
+                    pct_change=pct_change,
                     rate_date=row["rate_date"].date() if hasattr(row["rate_date"], "date") else row["rate_date"],
                     source=row["source"],
                     ingested_at=row["ingested_at"],
@@ -133,6 +197,7 @@ def run_all():
     raw_crypto = load_from_minio("coinbase")
 
     df_forex = t1_clean_forex(raw_forex)
+    df_forex = _append_derived_forex_pairs(df_forex)
     df_crypto = t1_clean_crypto(raw_crypto)
 
     engine = get_engine()
