@@ -7,108 +7,65 @@ Run:  python -m streaming.consumer
 
 from __future__ import annotations
 
-import json
-import time
-import logging
-import psycopg
-import os
-from datetime import datetime
 from collections import defaultdict, deque
+from datetime import datetime
+import json
+import logging
+import os
+import time
 
 from kafka import KafkaConsumer
 from kafka.errors import NoBrokersAvailable
 
+from transformation.db import get_engine, get_session
+from transformation.models import Base, CryptoStreamEnriched, RawCryptoStream
+from transformation.settings import get_streaming_settings
+
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s %(levelname)s [consumer] %(message)s"
+    format="%(asctime)s %(levelname)s [consumer] %(message)s",
 )
 logger = logging.getLogger(__name__)
 
-# Host execution (uv/python): localhost:19092
-# Container execution: set KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:19092")
-TOPIC           = "currency-stream"
-GROUP_ID        = "currency-consumer-group"
-MAX_BACKOFF     = 60
-VWAP_WINDOW_S   = 60    # rolling window in seconds for VWAP calculation
+STREAMING = get_streaming_settings()
+
+KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP_SERVERS", STREAMING.bootstrap_servers)
+TOPIC = STREAMING.topic
+GROUP_ID = STREAMING.group_id
+MAX_BACKOFF = STREAMING.max_backoff_seconds
+VWAP_WINDOW_S = STREAMING.vwap_window_seconds
 
 
-# ── Postgres helpers ──────────────────────────────────────────────────────────
-
-def get_pg_conn():
-    return psycopg.connect(
-        host="postgres", # ✅ pas localhost, car consumer tourne dans un conteneur Docker séparé
-        port=5432,
-        dbname="currency_db", user="postgres", password="postgres"
-    )
-
-
-def ensure_tables(conn):
-    cur = conn.cursor()
-
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS raw_crypto_stream (
-            id            SERIAL PRIMARY KEY,
-            coin          VARCHAR(10)   NOT NULL,
-            pair          VARCHAR(20)   NOT NULL,
-            price_usd     NUMERIC(18,6) NOT NULL,
-            event_time    TIMESTAMPTZ   NOT NULL,
-            source        VARCHAR(50),
-            ingested_at   TIMESTAMPTZ   DEFAULT NOW()
-        )
-    """)
-
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS crypto_stream_enriched (
-            id            SERIAL PRIMARY KEY,
-            coin          VARCHAR(10)   NOT NULL,
-            pair          VARCHAR(20)   NOT NULL,
-            price_usd     NUMERIC(18,6) NOT NULL,
-            vwap_1min     NUMERIC(18,6),
-            pct_from_vwap NUMERIC(10,4),
-            event_time    TIMESTAMPTZ   NOT NULL,
-            processed_at  TIMESTAMPTZ   DEFAULT NOW()
-        )
-    """)
-
-    # Index for fast time-range queries on the dashboard
-    cur.execute("""
-        CREATE INDEX IF NOT EXISTS idx_raw_stream_coin_time
-            ON raw_crypto_stream(coin, event_time DESC)
-    """)
-    cur.execute("""
-        CREATE INDEX IF NOT EXISTS idx_enriched_coin_time
-            ON crypto_stream_enriched(coin, event_time DESC)
-    """)
-
-    conn.commit()
+def ensure_tables(engine):
+    Base.metadata.create_all(engine, tables=[RawCryptoStream.__table__, CryptoStreamEnriched.__table__])
     logger.info("Tables and indexes ready")
 
 
-def insert_raw(cur, record: dict):
-    cur.execute("""
-        INSERT INTO raw_crypto_stream (coin, pair, price_usd, event_time, source)
-        VALUES (%s, %s, %s, %s, %s)
-    """, (
-        record["coin"],
-        record["pair"],
-        record["price_usd"],
-        record["timestamp"],
-        record.get("source", "coinbase_stream"),
-    ))
+def insert_raw(session, record: dict, event_time: datetime):
+    session.add(
+        RawCryptoStream(
+            coin=record["coin"],
+            pair=record["pair"],
+            price_usd=record["price_usd"],
+            event_time=event_time,
+            source=record.get("source", "coinbase_stream"),
+        )
+    )
 
 
-def insert_enriched(cur, coin: str, pair: str, price: float,
-                    vwap: float | None, event_time: str):
+def insert_enriched(session, coin: str, pair: str, price: float, vwap: float | None, event_time: datetime):
     pct = round((price - vwap) / vwap * 100, 4) if vwap else None
-    cur.execute("""
-        INSERT INTO crypto_stream_enriched
-            (coin, pair, price_usd, vwap_1min, pct_from_vwap, event_time)
-        VALUES (%s, %s, %s, %s, %s, %s)
-    """, (coin, pair, price, vwap, pct, event_time))
+    session.add(
+        CryptoStreamEnriched(
+            coin=coin,
+            pair=pair,
+            price_usd=price,
+            vwap_1min=vwap,
+            pct_from_vwap=pct,
+            event_time=event_time,
+        )
+    )
 
-
-# ── Streaming transformation: rolling VWAP ───────────────────────────────────
 
 class VWAPTracker:
     """
@@ -116,24 +73,21 @@ class VWAPTracker:
     VWAP = mean of all prices seen in the last VWAP_WINDOW_S seconds.
     (No volume data from free API, so we treat each tick as equal weight.)
     """
+
     def __init__(self, window_seconds: int = VWAP_WINDOW_S):
         self.window = window_seconds
-        # deque of (timestamp_epoch, price) per coin
         self._windows: dict[str, deque] = defaultdict(deque)
 
     def add(self, coin: str, price: float, ts: datetime) -> float | None:
         dq = self._windows[coin]
         cutoff = ts.timestamp() - self.window
-        # evict old entries
         while dq and dq[0][0] < cutoff:
             dq.popleft()
         dq.append((ts.timestamp(), price))
         if len(dq) < 2:
-            return None   # not enough data yet
+            return None
         return round(sum(p for _, p in dq) / len(dq), 6)
 
-
-# ── Validation ────────────────────────────────────────────────────────────────
 
 def validate(record: dict) -> bool:
     required = {"coin", "price_usd", "pair", "timestamp"}
@@ -149,8 +103,6 @@ def validate(record: dict) -> bool:
     return True
 
 
-# ── Consumer loop ─────────────────────────────────────────────────────────────
-
 def make_consumer(retries: int = 10) -> KafkaConsumer:
     wait = 2
     for attempt in range(1, retries + 1):
@@ -162,7 +114,7 @@ def make_consumer(retries: int = 10) -> KafkaConsumer:
                 auto_offset_reset="earliest",
                 enable_auto_commit=True,
                 value_deserializer=lambda m: json.loads(m.decode("utf-8")),
-                consumer_timeout_ms=-1,     # block indefinitely
+                consumer_timeout_ms=-1,
                 session_timeout_ms=30_000,
                 heartbeat_interval_ms=10_000,
             )
@@ -176,8 +128,8 @@ def make_consumer(retries: int = 10) -> KafkaConsumer:
 
 
 def run():
-    conn = get_pg_conn()
-    ensure_tables(conn)
+    engine = get_engine()
+    ensure_tables(engine)
 
     consumer = make_consumer()
     vwap_tracker = VWAPTracker()
@@ -197,29 +149,23 @@ def run():
             logger.warning(f"Bad timestamp: {record['timestamp']}")
             continue
 
-        coin  = record["coin"]
-        pair  = record["pair"]
+        coin = record["coin"]
+        pair = record["pair"]
         price = float(record["price_usd"])
 
-        # Rolling VWAP (streaming transformation)
         vwap = vwap_tracker.add(coin, price, event_time)
 
-        cur = conn.cursor()
+        session = get_session()
         try:
-            insert_raw(cur, record)
-            insert_enriched(cur, coin, pair, price, vwap, record["timestamp"])
-            conn.commit()
+            insert_raw(session, record, event_time)
+            insert_enriched(session, coin, pair, price, vwap, event_time)
+            session.commit()
         except Exception as e:
-            conn.rollback()
+            session.rollback()
             logger.error(f"DB write failed: {e}")
-            # reconnect if connection dropped
-            try:
-                conn.close()
-            except Exception:
-                pass
-            conn = get_pg_conn()
-            cur = conn.cursor()
             continue
+        finally:
+            session.close()
 
         processed += 1
         vwap_str = f"VWAP=${vwap:,.2f}" if vwap else "VWAP=pending"

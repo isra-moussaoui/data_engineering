@@ -2,7 +2,8 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.utils.dates import days_ago
 from datetime import timedelta
-import sys, logging
+import logging
+import sys
  
 sys.path.insert(0, "/opt/airflow")
  
@@ -45,18 +46,22 @@ with DAG(
  
     def task_run_transforms():
         from transformation.transform import (
-            load_from_minio, t1_clean_forex, t1_clean_crypto,
-            t2_daily_change, t3_unify_and_load, get_pg_conn
+            load_from_minio,
+            t1_clean_forex,
+            t1_clean_crypto,
+            t2_daily_change,
+            t3_unify_and_load,
         )
-        raw_forex  = load_from_minio("frankfurter")
+        from transformation.db import get_engine
+
+        raw_forex = load_from_minio("frankfurter")
         raw_crypto = load_from_minio("coinbase")
-        df_forex   = t1_clean_forex(raw_forex)
-        df_crypto  = t1_clean_crypto(raw_crypto)
-        conn = get_pg_conn()
-        df_forex   = t2_daily_change(df_forex,  conn)
-        df_crypto  = t2_daily_change(df_crypto, conn)
-        t3_unify_and_load(df_forex, df_crypto, conn)
-        conn.close()
+        df_forex = t1_clean_forex(raw_forex)
+        df_crypto = t1_clean_crypto(raw_crypto)
+        engine = get_engine()
+        df_forex = t2_daily_change(df_forex, engine)
+        df_crypto = t2_daily_change(df_crypto, engine)
+        t3_unify_and_load(df_forex, df_crypto, engine)
  
     t0 = PythonOperator(task_id="ensure_bucket",     python_callable=task_ensure_bucket)
     t1 = PythonOperator(task_id="fetch_frankfurter", python_callable=task_fetch_frankfurter)
@@ -86,32 +91,21 @@ with DAG(
         in raw_crypto_stream within the last 2 minutes.
         Raises an exception (triggering Airflow retry/alert) if stale.
         """
-        import psycopg2
- 
-        conn = psycopg2.connect(
-            host="postgres", port=5432,
-            dbname="currency_db", user="postgres", password="postgres"
-        )
-        cur = conn.cursor()
+        from transformation.db import get_engine
+        from transformation.sql import RAW_STREAM_RECENT_COUNT_SQL, RAW_STREAM_TABLE_EXISTS_SQL
 
-        # Give a clear operational error if the stream table has not been created yet.
-        cur.execute("SELECT to_regclass('public.raw_crypto_stream')")
-        table_name = cur.fetchone()[0]
-        if table_name is None:
-            conn.close()
-            raise ValueError(
-                "Table public.raw_crypto_stream does not exist in currency_db. "
-                "Start the streaming consumer first (python -m streaming.consumer) "
-                "and confirm it writes into the same Postgres service."
-            )
+        engine = get_engine()
+        with engine.connect() as conn:
+            table_name = conn.execute(RAW_STREAM_TABLE_EXISTS_SQL).scalar()
+            if table_name is None:
+                raise ValueError(
+                    "Table public.raw_crypto_stream does not exist in currency_db. "
+                    "Start the streaming consumer first (python -m streaming.consumer) "
+                    "and confirm it writes into the same Postgres service."
+                )
 
-        cur.execute("""
-            SELECT COUNT(*) FROM raw_crypto_stream
-            WHERE ingested_at > NOW() - INTERVAL '2 minutes'
-        """)
-        recent_count = cur.fetchone()[0]
-        conn.close()
- 
+            recent_count = conn.execute(RAW_STREAM_RECENT_COUNT_SQL).scalar() or 0
+
         if recent_count == 0:
             raise ValueError(
                 "Stream appears stalled — no rows in raw_crypto_stream in last 2 minutes"
@@ -120,21 +114,12 @@ with DAG(
  
     def task_check_enriched_lag():
         """Verifies enriched table is also being populated."""
-        import psycopg2
- 
-        conn = psycopg2.connect(
-            host="postgres", port=5432,
-            dbname="currency_db", user="postgres", password="postgres"
-        )
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT coin, COUNT(*) as ticks, ROUND(AVG(price_usd)::numeric, 2) as avg_price
-            FROM crypto_stream_enriched
-            WHERE processed_at > NOW() - INTERVAL '5 minutes'
-            GROUP BY coin
-        """)
-        rows = cur.fetchall()
-        conn.close()
+        from transformation.db import get_engine
+        from transformation.sql import ENRICHED_RECENT_ROWS_SQL
+
+        engine = get_engine()
+        with engine.connect() as conn:
+            rows = conn.execute(ENRICHED_RECENT_ROWS_SQL).all()
  
         if not rows:
             raise ValueError("No enriched rows in last 5 minutes — consumer may be down")

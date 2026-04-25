@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 import json
-import time
 import logging
-import requests
 import os
+import time
 from datetime import datetime, timezone
- 
+
+import requests
 from kafka import KafkaProducer
-from kafka.errors import NoBrokersAvailable, KafkaTimeoutError
+from kafka.errors import KafkaTimeoutError, NoBrokersAvailable
+
+from transformation.settings import get_streaming_settings
  
 logging.basicConfig(
     level=logging.INFO,
@@ -16,13 +18,13 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
  
-# Host execution (uv/python): localhost:19092
-# Container execution: set KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:19092")
-TOPIC           = "currency-stream"
-COINS           = ["BTC", "ETH", "SOL"]
-INTERVAL        = 10        # seconds between polls
-MAX_BACKOFF     = 60        # max reconnect wait in seconds
+STREAMING = get_streaming_settings()
+
+KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP_SERVERS", STREAMING.bootstrap_servers)
+TOPIC = STREAMING.topic
+COINS = ["BTC", "ETH", "SOL"]
+INTERVAL = STREAMING.producer_interval_seconds
+MAX_BACKOFF = STREAMING.max_backoff_seconds
  
  
 def make_producer(retries: int = 10) -> KafkaProducer:

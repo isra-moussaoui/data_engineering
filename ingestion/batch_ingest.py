@@ -1,9 +1,12 @@
-import requests
-import json
-import boto3
-from datetime import datetime, date
-from botocore.client import Config
 import logging
+import json
+from datetime import date, datetime
+
+import boto3
+import requests
+from botocore.client import Config
+
+from transformation.settings import get_minio_settings
 
 logging.basicConfig(
     level=logging.INFO,
@@ -11,17 +14,15 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-MINIO_ENDPOINT = "http://minio:9000"
-MINIO_ACCESS_KEY = "minioadmin"
-MINIO_SECRET_KEY = "minioadmin"
-BUCKET_NAME = "currency-raw"
+MINIO = get_minio_settings()
+BUCKET_NAME = MINIO.bucket_name
 
 # Initialize MinIO client
 s3 = boto3.client(
     "s3",
-    endpoint_url=MINIO_ENDPOINT,
-    aws_access_key_id=MINIO_ACCESS_KEY,
-    aws_secret_access_key=MINIO_SECRET_KEY,
+    endpoint_url=MINIO.endpoint,
+    aws_access_key_id=MINIO.access_key,
+    aws_secret_access_key=MINIO.secret_key,
     config=Config(signature_version="s3v4"),
 )
 

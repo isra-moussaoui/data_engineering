@@ -6,3 +6,5 @@ psycopg[binary]
 pandas
 pytest
 apache-airflow==2.8.1
+pydantic-settings>=2.2,<3.0
+sqlalchemy>=1.4,<2.0

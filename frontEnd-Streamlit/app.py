@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from datetime import datetime, timezone
+from pathlib import Path
 
 import streamlit as st
 from dotenv import load_dotenv
@@ -25,6 +26,10 @@ from data.sources import (
 
 load_dotenv()
 
+APP_DIR = Path(__file__).resolve().parent
+LOGO_PATH = APP_DIR / "assets" / "pulsefx_logo.png"
+BANNER_PATH = APP_DIR / "assets" / "pulsefx_banner.png"
+
 st.set_page_config(
     page_title="PulseFX",
     page_icon="chart_with_upwards_trend",
@@ -32,7 +37,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-st.logo("assets/pulsefx_logo.png")
+st.logo(str(LOGO_PATH))
 
 st.markdown(
     """
@@ -195,7 +200,7 @@ st.sidebar.metric("Mode", app_mode.upper())
 st.sidebar.metric("UTC", datetime.now(timezone.utc).strftime("%H:%M:%S"))
 st.sidebar.caption("Tune filters and navigate with the page list below.")
 
-st.image("assets/pulsefx_banner.png", use_container_width=True)
+st.image(str(BANNER_PATH), use_container_width=True)
 
 st.markdown(
     f"""
