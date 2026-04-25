@@ -12,6 +12,7 @@ It combines:
 - Object storage with MinIO
 - Message streaming with Kafka
 - Relational storage with PostgreSQL
+- Interactive data visualization with Streamlit
 
 The goal is to demonstrate a production-style pipeline that supports both historical and near real-time analytics.
 
@@ -33,6 +34,12 @@ The goal is to demonstrate a production-style pipeline that supports both histor
 - Stores enriched records in PostgreSQL
 - Monitored every 5 minutes via Airflow
 
+### Frontend Dashboard (PulseFX)
+
+- Interactive dashboard built with Streamlit
+- Visualizes real-time metrics, pipeline health, and historical rates
+- Directly queries live enriched data from PostgreSQL
+
 ## Tech Stack
 
 - Python
@@ -42,6 +49,7 @@ The goal is to demonstrate a production-style pipeline that supports both histor
 - Apache Kafka + Zookeeper
 - PostgreSQL
 - MinIO (S3-compatible object storage)
+- Streamlit (Frontend Dashboard)
 - Pandas / SQL
 
 ## Project Structure
@@ -128,13 +136,7 @@ cd <repo-folder>
 uv sync
 ```
 
-3. If you changed dependencies in `pyproject.toml`, export the Docker requirements file
-
-```bash
-uv export --no-hashes --format requirements-txt -o requirements.txt
-```
-
-4. Start all services
+3. Start all services
 
 ```bash
 docker compose up -d
@@ -148,6 +150,7 @@ This starts:
 - Kafka
 - Zookeeper
 - MinIO
+- Streamlit Dashboard
 
 5. Wait for containers to initialize and verify status
 
@@ -167,13 +170,7 @@ Use this sequence each time you want to run the application.
 uv sync
 ```
 
-2. Update Docker dependency export only when Python dependencies changed:
-
-```bash
-uv export --no-hashes --format requirements-txt -o requirements.txt
-```
-
-3. Start all services:
+2. Start all services:
 
 ```bash
 docker compose up -d
@@ -195,7 +192,7 @@ docker ps
 7. Verify enriched stream records in PostgreSQL:
 
 ```bash
-docker exec -it <postgres-container> psql -U postgres -d currency_db -c "SELECT coin, price_usd, vwap_1min, pct_from_vwap, event_time FROM crypto_stream_enriched ORDER BY event_time DESC LIMIT 10;"
+docker exec -it data_engineering-postgres-1 psql -U postgres -d currency_db -c "SELECT coin, price_usd, vwap_1min, pct_from_vwap, event_time FROM crypto_stream_enriched ORDER BY event_time DESC LIMIT 10;"
 ```
 
 8. For local scripts and tests, always run through uv:
@@ -207,10 +204,15 @@ uv run pytest
 
 Dependency rule:
 
-- `pyproject.toml` and `uv.lock` are the source of truth.
-- `requirements.txt` is a generated export used by Docker/Airflow containers.
+- `pyproject.toml` and `uv.lock` are the source of truth for your local development environment.
+- **Docker Dependencies**: Docker containers will get their dependencies exclusively from the static `requirements.txt` file. Do not auto-export to this file, as doing so may crush or conflict with the strict Python environment required by Apache Airflow.
 
 ## Access Services
+
+### PulseFX Dashboard (Streamlit)
+
+- URL: http://localhost:8501
+- Provides a real-time view of pipeline health, live crypto flows, and daily FX rates.
 
 ### Airflow
 
@@ -319,7 +321,6 @@ docker logs <container-name>
 
 ## Future Improvements
 
-- Add Grafana dashboard for live charts
 - Add anomaly alerts
 - Add historical warehouse layer
 - Add Spark Structured Streaming

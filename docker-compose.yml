@@ -195,6 +195,28 @@ services:
       - ./requirements.txt:/requirements.txt
     command: >
       bash -c "pip install --user -r /requirements.txt && python -m streaming.consumer"
+  # ─────────────────────────────
+  # STREAMLIT DASHBOARD
+  # ─────────────────────────────
+  streamlit:
+    image: python:3.10-slim
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8501:8501"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=currency_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - APP_MODE=live
+    volumes:
+      - ./frontEnd-Streamlit:/app
+    working_dir: /app
+    command: >
+      bash -c "pip install --no-cache-dir -r requirements.txt && streamlit run app.py --server.port 8501 --server.address 0.0.0.0"
 
 volumes:
   postgres_data:

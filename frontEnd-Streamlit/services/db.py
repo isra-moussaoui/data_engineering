@@ -25,7 +25,8 @@ def test_connection() -> bool:
                 cur.execute("SELECT 1")
                 _ = cur.fetchone()
         return True
-    except Exception:
+    except Exception as e:
+        logger.error("DB connection failed: %s", e)
         return False
 
 

@@ -16,26 +16,28 @@ def render_market_cards(df: pd.DataFrame) -> None:
         has_change = "change_24h" in row.index and pd.notna(row.get("change_24h"))
         change_value = row.get("change_24h", row.get("pct_change", row.get("pct_from_vwap", 0.0)))
         change_label = "24h" if has_change else "signal"
-        delta_color = "#0f766e" if float(change_value) >= 0 else "#b91c1c"
+        delta_color = "#02C076" if float(change_value) >= 0 else "#F6465D"
         direction = "+" if float(change_value) >= 0 else ""
         secondary_value = row.get("vwap_1min", row.get("prev_rate", None))
         secondary_label = "VWAP 1m" if "vwap_1min" in row.index else "Prev rate"
         cols[idx].markdown(
             f"""
             <div style="
-                background: linear-gradient(180deg, #ffffff 0%, #f6fafc 100%);
-                border: 1px solid #dbe6ed;
-                border-radius: 16px;
+                background: rgba(24, 26, 32, 0.8);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 8px;
                 padding: 14px 16px;
-                box-shadow: 0 10px 20px rgba(2, 6, 23, 0.05);
-            ">
-                <div style="font-size: 0.9rem; color: #475569;">{row['pair']}</div>
-                <div style="font-size: 1.6rem; font-weight: 700; color: #0f172a; margin-top: 2px;">
+                box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+                backdrop-filter: blur(16px);
+                transition: transform 0.2s ease, border-color 0.2s ease;
+            " onmouseover="this.style.borderColor='rgba(2, 192, 118, 0.3)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.05)'; this.style.transform='translateY(0)';">
+                <div style="font-size: 0.9rem; color: #BBCABD; font-family: 'Space Grotesk', sans-serif;">{row['pair']}</div>
+                <div style="font-size: 1.6rem; font-weight: 700; color: #E1E2E7; margin-top: 2px;">
                     {f'${row["price_usd"]:,.2f}' if pd.notna(row.get('price_usd')) else 'n/a'}
                 </div>
                 <div style="display: flex; justify-content: space-between; margin-top: 8px;">
-                    <span style="font-size: 0.85rem; color: #334155;">{secondary_label}: {f'${secondary_value:,.2f}' if pd.notna(secondary_value) else 'n/a'}</span>
-                    <span style="font-size: 0.85rem; color: {delta_color}; font-weight: 600;">
+                    <span style="font-size: 0.85rem; color: #869488; font-family: 'Inter', sans-serif;">{secondary_label}: {f'${secondary_value:,.2f}' if pd.notna(secondary_value) else 'n/a'}</span>
+                    <span style="font-size: 0.85rem; color: {delta_color}; font-weight: 600; font-family: 'Inter', sans-serif;">
                         {direction}{float(change_value):.2f}% {change_label}
                     </span>
                 </div>
@@ -57,7 +59,7 @@ def render_price_vwap_chart(df: pd.DataFrame, title: str) -> None:
             y=df["price_usd"],
             mode="lines",
             name="Price",
-            line={"color": "#0f766e", "width": 2.6},
+            line={"color": "#02C076", "width": 2.6},
         )
     )
     fig.add_trace(
@@ -66,18 +68,30 @@ def render_price_vwap_chart(df: pd.DataFrame, title: str) -> None:
             y=df["vwap_1min"],
             mode="lines",
             name="VWAP 1m",
-            line={"color": "#1d4ed8", "width": 2, "dash": "dot"},
+            line={"color": "#6366F1", "width": 2, "dash": "dot"},
         )
     )
     fig.update_layout(
         title=title,
-        template="plotly_white",
+        template="plotly_dark",
         legend={"orientation": "h", "y": 1.05, "x": 0.01},
         margin={"t": 60, "r": 20, "b": 20, "l": 20},
         hovermode="x unified",
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
     )
-    fig.update_xaxes(title_text="")
-    fig.update_yaxes(title_text="USD")
+    fig.update_xaxes(
+        title_text="",
+        showline=True, linecolor='rgba(255,255,255,0.1)',
+        showgrid=True, gridcolor='rgba(255,255,255,0.05)',
+        showspikes=True, spikemode="across", spikethickness=1, spikedash="solid", spikecolor="#02C076"
+    )
+    fig.update_yaxes(
+        title_text="USD",
+        showline=True, linecolor='rgba(255,255,255,0.1)',
+        showgrid=True, gridcolor='rgba(255,255,255,0.05)',
+        showspikes=True, spikemode="across", spikethickness=1, spikedash="solid", spikecolor="#02C076"
+    )
     st.plotly_chart(fig, use_container_width=True)
 
 
@@ -90,17 +104,27 @@ def render_rate_chart(df: pd.DataFrame, title: str) -> None:
         go.Bar(
             x=df["currency_pair"],
             y=df["rate"],
-            marker={"color": ["#0f766e" if str(src) == "frankfurter" else "#1d4ed8" for src in df["source"]]},
+            marker={"color": ["#02C076" if str(src) == "frankfurter" else "#6366F1" for src in df["source"]]},
             text=[f"{v:,.3f}" for v in df["rate"]],
             textposition="outside",
         )
     )
     fig.update_layout(
         title=title,
-        template="plotly_white",
+        template="plotly_dark",
         margin={"t": 60, "r": 20, "b": 20, "l": 20},
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
         yaxis_title="Rate",
         xaxis_title="",
+    )
+    fig.update_xaxes(
+        showline=True, linecolor='rgba(255,255,255,0.1)',
+        showgrid=True, gridcolor='rgba(255,255,255,0.05)'
+    )
+    fig.update_yaxes(
+        showline=True, linecolor='rgba(255,255,255,0.1)',
+        showgrid=True, gridcolor='rgba(255,255,255,0.05)'
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -114,7 +138,7 @@ def render_deviation_chart(df: pd.DataFrame, title: str) -> None:
         st.info("Deviation data is unavailable for this selection.")
         return
 
-    color = ["#0f766e" if x >= 0 else "#dc2626" for x in df["pct_from_vwap"]]
+    color = ["#02C076" if x >= 0 else "#F6465D" for x in df["pct_from_vwap"]]
     fig = go.Figure(
         go.Bar(
             x=df["coin"],
@@ -126,11 +150,21 @@ def render_deviation_chart(df: pd.DataFrame, title: str) -> None:
     )
     fig.update_layout(
         title=title,
-        template="plotly_white",
+        template="plotly_dark",
         height=320,
         margin={"t": 60, "r": 20, "b": 20, "l": 20},
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
     )
-    fig.update_yaxes(title_text="% from VWAP")
+    fig.update_xaxes(
+        showline=True, linecolor='rgba(255,255,255,0.1)',
+        showgrid=True, gridcolor='rgba(255,255,255,0.05)'
+    )
+    fig.update_yaxes(
+        title_text="% from VWAP",
+        showline=True, linecolor='rgba(255,255,255,0.1)',
+        showgrid=True, gridcolor='rgba(255,255,255,0.05)'
+    )
     st.plotly_chart(fig, use_container_width=True)
 
 
@@ -145,19 +179,31 @@ def render_deviation_timeseries(df: pd.DataFrame, title: str) -> None:
             y=df["pct_from_vwap"],
             mode="lines",
             fill="tozeroy",
-            line={"color": "#ea580c", "width": 2},
-            fillcolor="rgba(251, 146, 60, 0.2)",
+            line={"color": "#F6465D", "width": 2},
+            fillcolor="rgba(246, 70, 93, 0.2)",
             name="% from VWAP",
         )
     )
     fig.update_layout(
         title=title,
-        template="plotly_white",
+        template="plotly_dark",
         margin={"t": 55, "r": 20, "b": 20, "l": 20},
         hovermode="x unified",
         showlegend=False,
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
     )
-    fig.update_yaxes(title_text="%")
+    fig.update_xaxes(
+        showline=True, linecolor='rgba(255,255,255,0.1)',
+        showgrid=True, gridcolor='rgba(255,255,255,0.05)',
+        showspikes=True, spikemode="across", spikethickness=1, spikedash="solid", spikecolor="#F6465D"
+    )
+    fig.update_yaxes(
+        title_text="%",
+        showline=True, linecolor='rgba(255,255,255,0.1)',
+        showgrid=True, gridcolor='rgba(255,255,255,0.05)',
+        showspikes=True, spikemode="across", spikethickness=1, spikedash="solid", spikecolor="#F6465D"
+    )
     st.plotly_chart(fig, use_container_width=True)
 
 
@@ -173,7 +219,7 @@ def render_health_timeline(df: pd.DataFrame, title: str) -> None:
             y=df["ingest_lag_s"],
             mode="lines",
             name="Ingest lag (s)",
-            line={"color": "#dc2626", "width": 2},
+            line={"color": "#F6465D", "width": 2},
         ),
         secondary_y=False,
     )
@@ -183,19 +229,33 @@ def render_health_timeline(df: pd.DataFrame, title: str) -> None:
             y=df["writes_per_min"],
             mode="lines",
             name="DB writes/min",
-            line={"color": "#0f766e", "width": 2.4},
+            line={"color": "#02C076", "width": 2.4},
         ),
         secondary_y=True,
     )
     fig.update_layout(
         title=title,
-        template="plotly_white",
+        template="plotly_dark",
         hovermode="x unified",
         legend={"orientation": "h", "y": 1.05, "x": 0.01},
         margin={"t": 60, "r": 20, "b": 20, "l": 20},
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
     )
-    fig.update_yaxes(title_text="Lag (s)", secondary_y=False)
-    fig.update_yaxes(title_text="Writes/min", secondary_y=True)
+    fig.update_xaxes(
+        showline=True, linecolor='rgba(255,255,255,0.1)',
+        showgrid=True, gridcolor='rgba(255,255,255,0.05)',
+        showspikes=True, spikemode="across", spikethickness=1, spikedash="solid", spikecolor="#6366F1"
+    )
+    fig.update_yaxes(
+        title_text="Lag (s)", secondary_y=False,
+        showline=True, linecolor='rgba(255,255,255,0.1)',
+        showgrid=True, gridcolor='rgba(255,255,255,0.05)'
+    )
+    fig.update_yaxes(
+        title_text="Writes/min", secondary_y=True,
+        showline=False, showgrid=False
+    )
     st.plotly_chart(fig, use_container_width=True)
 
 

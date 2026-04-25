@@ -32,49 +32,144 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+st.logo("assets/pulsefx_logo.png")
+
 st.markdown(
     """
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
         .stApp {
-            background:
-                radial-gradient(1200px 500px at 0% -10%, rgba(20, 184, 166, 0.18), transparent 58%),
-                radial-gradient(900px 400px at 100% -20%, rgba(249, 115, 22, 0.12), transparent 52%),
-                linear-gradient(180deg, #f7fbff 0%, #eef4f9 100%);
+            background-color: #111417;
         }
-        h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; color: #0f172a; }
-        p, li, .stCaption, .stMarkdown { font-family: 'IBM Plex Mono', monospace; }
+        h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; color: #E1E2E7; }
+        p, li, .stCaption, .stMarkdown { font-family: 'Inter', sans-serif; }
+        
         .hero-box {
-            padding: 1.1rem 1.2rem;
-            border-radius: 16px;
-            border: 1px solid #dce8f0;
-            background: linear-gradient(92deg, #ffffff 0%, #f5fbff 100%);
-            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(24, 26, 32, 0.8);
+            backdrop-filter: blur(16px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            transition: border-color 0.3s ease;
         }
-        .hero-kicker { color: #0f766e; letter-spacing: 0.08em; font-weight: 700; font-size: 0.74rem; }
-        .hero-title { margin-top: 6px; font-size: 1.85rem; font-weight: 700; color: #0f172a; }
-        .hero-sub { margin-top: 4px; color: #334155; font-size: 0.92rem; }
+        .hero-box:hover {
+            border-color: rgba(2, 192, 118, 0.6);
+            background: rgba(2, 192, 118, 0.05);
+            box-shadow: 0 0 25px rgba(2, 192, 118, 0.25);
+            transform: translateY(-2px);
+        }
+        .hero-kicker { color: #02C076; letter-spacing: 0.08em; font-weight: 600; font-size: 0.74rem; font-family: 'Space Grotesk', sans-serif; }
+        .hero-title { margin-top: 6px; font-size: 2.2rem; font-weight: 700; color: #E1E2E7; }
+        .hero-sub { margin-top: 4px; color: #BBCABD; font-size: 0.95rem; font-family: 'Inter', sans-serif; }
+        
         .section-pill {
-            display: inline-block;
-            padding: 0.18rem 0.55rem;
-            margin-bottom: 0.6rem;
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            margin-bottom: 0.8rem;
             border-radius: 999px;
-            background: rgba(15, 118, 110, 0.10);
-            color: #0f766e;
-            font-size: 0.72rem;
-            font-weight: 700;
+            background: rgba(2, 192, 118, 0.15);
+            border: 1px solid rgba(2, 192, 118, 0.3);
+            color: #02C076;
+            font-size: 0.75rem;
+            font-weight: 600;
             letter-spacing: 0.05em;
+            font-family: 'Space Grotesk', sans-serif;
+            text-transform: uppercase;
         }
         .tiny-pill {
             display: inline-block;
-            margin-top: 10px;
+            margin-top: 15px;
             padding: 0.25rem 0.55rem;
-            border-radius: 999px;
-            border: 1px solid #bfdbfe;
-            background: #eff6ff;
-            color: #1d4ed8;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: #E1E2E7;
             font-size: 0.72rem;
+            font-weight: 500;
+        }
+        
+        /* Status Dot Animation */
+        .status-dot {
+            height: 8px;
+            width: 8px;
+            background-color: #02C076;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            box-shadow: 0 0 8px #02C076;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(2, 192, 118, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(2, 192, 118, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(2, 192, 118, 0); }
+        }
+
+        /* Professional Metric Cards */
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .metric-card {
+            background: rgba(24, 26, 32, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+        .metric-card:hover {
+            border-color: rgba(2, 192, 118, 0.3);
+            transform: translateY(-2px);
+        }
+        .metric-label {
+            color: #BBCABD;
+            font-size: 0.80rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.4rem;
+        }
+        .metric-value {
+            color: #E1E2E7;
+            font-size: 1.6rem;
             font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .metric-highlight {
+            color: #02C076;
+        }
+        
+        /* Make st.logo take full sidebar width and act as a large banner */
+        [data-testid="stSidebarHeader"] {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        [data-testid="stSidebarHeader"] > div:first-child {
+            width: 100% !important;
+            display: flex;
+            justify-content: center;
+        }
+        img[data-testid="stSidebarLogo"] {
+            width: 100% !important;
+            height: 120px !important;
+            max-height: none !important;
+            max-width: 100% !important;
+            object-fit: contain !important;
+            margin-top: 100px !important;
+        }
+        
+        /* Push the navigation links down so they don't overlap with the large logo */
+        [data-testid="stSidebarNav"] {
+            margin-top: 100px !important;
         }
     </style>
     """,
@@ -100,34 +195,58 @@ st.sidebar.metric("Mode", app_mode.upper())
 st.sidebar.metric("UTC", datetime.now(timezone.utc).strftime("%H:%M:%S"))
 st.sidebar.caption("Tune filters and navigate with the page list below.")
 
-left, right = st.columns([2.4, 1])
-with left:
-    st.markdown(
-        f"""
-        <div class="hero-box">
-            <div class="hero-kicker">CURRENCY INTELLIGENCE PLATFORM</div>
-            <div class="hero-title">PulseFX</div>
-            <div class="hero-sub">
-                Institutional-grade visibility over live crypto flow, daily FX rates, and ingestion reliability.
-            </div>
-            <span class="tiny-pill">Updated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC</span>
+st.image("assets/pulsefx_banner.png", use_container_width=True)
+
+st.markdown(
+    f"""
+    <div class="hero-box">
+        <div class="hero-kicker">CURRENCY INTELLIGENCE PLATFORM</div>
+        <div class="hero-title">PulseFX</div>
+        <div class="hero-sub">
+            Institutional-grade visibility over live crypto flow, daily FX rates, and ingestion reliability.
         </div>
-        """,
-        unsafe_allow_html=True,
-    )
-with right:
-    st.metric("Live assets", str(overview["live_assets"]))
-    st.metric("Daily pairs", str(overview["batch_pairs"]))
-    st.metric("Pipeline availability", f"{health['uptime_pct']:.2f}%")
-    st.metric("Freshness SLA", f"{health['freshness_sla_s']}s")
+        <span class="tiny-pill">Updated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC</span>
+    </div>
+    
+    <div class="metric-grid">
+        <div class="metric-card">
+            <div class="metric-label">Live Assets</div>
+            <div class="metric-value">{overview['live_assets']}</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Daily Pairs</div>
+            <div class="metric-value">{overview['batch_pairs']}</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Pipeline Availability</div>
+            <div class="metric-value metric-highlight">{health['uptime_pct']:.2f}%</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Freshness SLA</div>
+            <div class="metric-value">{health['freshness_sla_s']}s</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Stream Rows</div>
+            <div class="metric-value">{overview['stream_rows']}</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Batch Rows</div>
+            <div class="metric-value">{overview['batch_rows']}</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Avg Stream Gap</div>
+            <div class="metric-value">{overview['avg_stream_gap']:.2f}%</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Avg Batch Change</div>
+            <div class="metric-value">{overview['avg_batch_change']:.2f}%</div>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
-k1, k2, k3, k4 = st.columns(4)
-k1.metric("Stream rows", str(overview["stream_rows"]))
-k2.metric("Batch rows", str(overview["batch_rows"]))
-k3.metric("Avg stream gap", f"{overview['avg_stream_gap']:.2f}%")
-k4.metric("Avg batch change", f"{overview['avg_batch_change']:.2f}%")
-
-st.markdown('<span class="section-pill">Live market board</span>', unsafe_allow_html=True)
+st.markdown('<span class="section-pill"><span class="status-dot"></span>Live market board</span>', unsafe_allow_html=True)
 render_market_cards(stream_snapshot)
 
 chart_col, side_col = st.columns([2.1, 1])
@@ -156,7 +275,7 @@ with batch_chart_col:
 with batch_table_col:
     render_event_table(batch_snapshot)
 
-st.markdown('<span class="section-pill">Recent live tape</span>', unsafe_allow_html=True)
+st.markdown('<span class="section-pill"><span class="status-dot"></span>Recent live tape</span>', unsafe_allow_html=True)
 events = get_live_events(limit=30)
 render_event_table(events)
 
@@ -179,6 +298,7 @@ story[2].markdown("""
     <div class="hero-kicker">OPS CONTROL</div>
     <div class="hero-sub">Detect ingestion bottlenecks quickly through lag and write-throughput history from production tables.</div>
 </div>
+</br></br></br></br></br>
 """, unsafe_allow_html=True)
 
 if health["latest_stream_time"] is not None:

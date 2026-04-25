@@ -1,14 +1,29 @@
-﻿__pycache__/
+# Environments & Secrets
 .env
-*.pyc
+.venv/
+venv/
+env/
+**/.streamlit/secrets.toml
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Logs & Databases
 logs/
 airflow/logs/
-minio_data/
-postgres_data/
-.vscode/
-.idea/
-.DS_Store
 *.log
 *.sqlite3
 *.db
 *.bak
+
+# Local Data Volumes
+minio_data/
+postgres_data/
+
+# OS & IDEs
+.vscode/
+.idea/
+.DS_Store
