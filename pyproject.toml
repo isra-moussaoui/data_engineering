@@ -5,12 +5,13 @@ description = "Currency and crypto data engineering pipeline with batch and stre
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "apache-airflow==2.8.1",
+    "apache-airflow>=2.8,<3.0",
     "boto3>=1.42.91",
     "connexion[swagger-ui]>=2.10.0,<3.0",
     "kafka-python>=2.3.1",
     "pandas>=3.0.2",
     "plotly>=5.22,<6.0",
+    "psycopg2-binary>=2.9.9",
     "psycopg[binary]>=3.3.3",
     "pydantic-settings>=2.2,<3.0",
     "pytest>=9.0.3",

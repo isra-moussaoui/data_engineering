@@ -1,10 +1,6 @@
-requests
 boto3
-connexion[swagger-ui]>=2.10.0,<3.0
-kafka-python
-psycopg[binary]
-pandas
-pytest
-apache-airflow==2.8.1
+kafka-python>=2.3.1
+pandas>=1.5,<2.0
+psycopg2-binary>=2.9.9
 pydantic-settings>=2.2,<3.0
-sqlalchemy>=1.4,<2.0
+python-dotenv>=1.0,<2.0

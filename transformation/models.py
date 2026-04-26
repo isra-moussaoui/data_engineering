@@ -1,3 +1,4 @@
+# Database table definitions
 from sqlalchemy import Column, Date, DateTime, Index, Integer, Numeric, String, func
 from sqlalchemy.orm import declarative_base
 

@@ -170,6 +170,8 @@ Use this sequence each time you want to run the application.
 uv sync
 ```
 
+
+
 2. Start all services:
 
 ```bash
@@ -317,6 +319,19 @@ Check logs:
 
 ```bash
 docker logs <container-name>
+```
+
+### . Clear Docker cache (critical — prevents stale image issues)
+ 
+```bash
+docker system prune -af
+docker volume prune -f
+```
+ 
+### . Start all services
+ 
+```bash
+docker compose up -d
 ```
 
 ## Future Improvements

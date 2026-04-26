@@ -67,7 +67,7 @@ class PostgresSettings(BaseSettings):
     def sqlalchemy_url(self) -> str:
         return str(
             URL.create(
-                "postgresql+psycopg",
+                "postgresql+psycopg2",
                 username=self.user,
                 password=self.password,
                 host=self.host,

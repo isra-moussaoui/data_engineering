@@ -7,8 +7,9 @@ import boto3
 import pandas as pd
 from botocore.client import Config
 from sqlalchemy import select
+from sqlalchemy.orm import sessionmaker
 
-from transformation.db import get_engine, get_session
+from transformation.db import get_engine
 from transformation.models import UnifiedRate
 from transformation.settings import get_minio_settings
 
@@ -175,7 +176,10 @@ def t3_unify_and_load(df_forex: pd.DataFrame, df_crypto: pd.DataFrame, engine):
     df = pd.concat([df_forex, df_crypto], ignore_index=True)
     df["transformed_at"] = datetime.utcnow()
 
-    session = get_session()
+    session_factory = sessionmaker(
+        bind=engine, autoflush=False, autocommit=False
+    )
+    session = session_factory()
     try:
         session.query(UnifiedRate).filter(UnifiedRate.rate_date == date.today()).delete(
             synchronize_session=False

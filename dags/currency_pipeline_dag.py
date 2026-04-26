@@ -54,12 +54,14 @@ with DAG(
             t1_clean_crypto,
             t2_daily_change,
             t3_unify_and_load,
+            _append_derived_forex_pairs,
         )
         from transformation.db import get_engine
 
         raw_forex = load_from_minio("frankfurter")
         raw_crypto = load_from_minio("coinbase")
         df_forex = t1_clean_forex(raw_forex)
+        df_forex = _append_derived_forex_pairs(df_forex)
         df_crypto = t1_clean_crypto(raw_crypto)
         engine = get_engine()
         df_forex = t2_daily_change(df_forex, engine)
